@@ -5,7 +5,6 @@ import typing as _typing
 
 _T = _typing.TypeVar('_T')
 _T2 = _typing.TypeVar('_T2')
-_Ts = _typing.TypeVarTuple('_Ts')
 
 
 def constant(value: _T, /) -> _typing.Callable[..., _T]:
