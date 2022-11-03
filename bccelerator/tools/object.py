@@ -1,3 +1,5 @@
+# -*- coding: bccelerator-transform-UTF-8 -*-
+
 # object
 
 import bmesh as _bmesh
@@ -10,6 +12,7 @@ import typing as _typing
 
 from .. import util as _util
 from ..util import enums as _util_enums
+from ..util import polyfill as _util_polyfill
 from ..util import props as _util_props
 from ..util import types as _util_types
 from ..util import utils as _util_utils
@@ -72,41 +75,34 @@ class ConfigureEEVEEVolumetrics(_bpy.types.Operator):
         'mode'
     )
 
-    mode_items: _typing.ClassVar[_typing.Mapping[str, _util_props.EnumPropertyItem[str]]] = _types.MappingProxyType({
-        'DISABLE': _util_props.EnumPropertyItem[str]('DISABLE', 'Disable', 'Disable EEVEE volumetrics', number=0),
-        'ENABLE': _util_props.EnumPropertyItem[str]('ENABLE', 'Enable', 'Enable EEVEE volumetrics', number=1),
-        'EEVEE': _util_props.EnumPropertyItem[str]('EEVEE', 'EEVEE-Only', 'Enable volumetrics for EEVEE only', number=2),
+    mode_items: _typing.ClassVar[_typing.Mapping[str, _util_props.EnumPropertyItem4]] = _types.MappingProxyType({
+        'DISABLE': _util_props.enum_property_item('DISABLE', 'Disable', 'Disable EEVEE volumetrics', number=0),
+        'ENABLE': _util_props.enum_property_item('ENABLE', 'Enable', 'Enable EEVEE volumetrics', number=1),
+        'EEVEE': _util_props.enum_property_item('EEVEE', 'EEVEE-Only', 'Enable volumetrics for EEVEE only', number=2),
     })
-    mode: _typing.ClassVar[_typing.Annotated[str,
-                                             (_bpy.props.EnumProperty  # type: ignore
-                                              )(
-                                                 name='EEVEE Volumetrics Mode',
-                                                 items=mode_items.values(),  # type: ignore
-                                                 description='Volumetrics mode for EEVEE for selected object(s)',
-                                                 default='DISABLE',
-                                                 options={
-                                                     _util_enums.PropertyFlagEnum.SKIP_SAVE},
-                                             )]]
+    mode: _typing.Annotated[str,
+                            _bpy.props.EnumProperty  # type: ignore
+                            ]
     mode_min: _typing.ClassVar[int] = min(
-        value.number for value in mode_items.values() if value.number is not None)
+        value[-1] for value in mode_items.values())
     mode_max: _typing.ClassVar[int] = max(
-        value.number for value in mode_items.values() if value.number is not None)
+        value[-1] for value in mode_items.values())
     mode_name: _typing.ClassVar[str] = 'EEVEE volumetrics'
 
     @classmethod
     def poll(  # type: ignore
-            cls: type[_typing.Self], context: _bpy.types.Context
+            cls: type[_util_polyfill.Self], context: _bpy.types.Context
     ) -> bool:
         return bool(context.selected_objects)
 
     def execute(  # type: ignore
-        self: _typing.Self, context: _bpy.types.Context
+        self: _util_polyfill.Self, context: _bpy.types.Context
     ) -> _typing.AbstractSet[_util_enums.OperatorReturn]:
         processed: int = 0
         object: _bpy.types.Object
         for object in context.selected_objects:
             if self.mode_name in object:
-                if object[self.mode_name] == self.mode_items[self.mode].number:
+                if object[self.mode_name] == self.mode_items[self.mode][-1]:
                     continue
             else:
                 object[self.mode_name] = int()
@@ -117,10 +113,10 @@ class ConfigureEEVEEVolumetrics(_bpy.types.Operator):
                     soft_min=self.mode_min,
                     soft_max=self.mode_max,
                     step=1,
-                    default=self.mode_items['DISABLE'].number,
+                    default=self.mode_items['DISABLE'][-1],
                     description='Volumetrics mode for EEVEE',
                 )
-            object[self.mode_name] = self.mode_items[self.mode].number
+            object[self.mode_name] = self.mode_items[self.mode][-1]
             processed += 1
             self.report({str(_util_enums.WMReport.INFO)},
                         f'Configured object "{object.name_full}"')
@@ -129,9 +125,19 @@ class ConfigureEEVEEVolumetrics(_bpy.types.Operator):
         return {_util_enums.OperatorReturn.FINISHED} if processed > 0 else {_util_enums.OperatorReturn.CANCELLED}
 
     def invoke(  # type: ignore
-        self: _typing.Self, context: _bpy.types.Context, event: _bpy.types.Event
+        self: _util_polyfill.Self, context: _bpy.types.Context, event: _bpy.types.Event
     ) -> _typing.AbstractSet[_util_enums.OperatorReturn]:
         return _typing.cast(_typing.AbstractSet[_util_enums.OperatorReturn], context.window_manager.invoke_props_dialog(self))
+
+
+ConfigureEEVEEVolumetrics.__annotations__['mode'] = (_bpy.props.EnumProperty  # type: ignore
+                                                     )(
+    name='EEVEE Volumetrics Mode',
+    items=ConfigureEEVEEVolumetrics.mode_items.values(),  # type: ignore
+    description='Volumetrics mode for EEVEE for selected object(s)',
+    default='DISABLE',
+    options={_util_enums.PropertyFlagEnum.SKIP_SAVE, },
+)
 
 
 class MergeWallCollection(_bpy.types.Operator):
@@ -149,11 +155,11 @@ class MergeWallCollection(_bpy.types.Operator):
 
     @classmethod
     def poll(  # type: ignore
-            cls: type[_typing.Self], context: _bpy.types.Context) -> bool:
+            cls: type[_util_polyfill.Self], context: _bpy.types.Context) -> bool:
         return context.mode == _util_enums.ContextMode.OBJECT and context.collection is not None
 
     def execute(  # type: ignore
-            self: _typing.Self, context: _bpy.types.Context) -> _typing.AbstractSet[_util_enums.OperatorReturn]:
+            self: _util_polyfill.Self, context: _bpy.types.Context) -> _typing.AbstractSet[_util_enums.OperatorReturn]:
         data: _bpy.types.BlendData = context.blend_data
         scene: _bpy.types.Scene = context.scene
         collection: _bpy.types.Collection = context.collection
@@ -218,13 +224,13 @@ class FixRigifyRigAnimationData(_bpy.types.Operator):
 
     @classmethod
     def poll(  # type: ignore
-            cls: type[_typing.Self], context: _bpy.types.Context) -> bool:
+            cls: type[_util_polyfill.Self], context: _bpy.types.Context) -> bool:
         return (context.mode == _util_enums.ContextMode.OBJECT
                 and bool(context.selected_objects)
                 and any('rig_ui' in obj for obj in context.selected_objects))
 
     def execute(  # type: ignore
-        self: _typing.Self, context: _bpy.types.Context
+        self: _util_polyfill.Self, context: _bpy.types.Context
     ) -> _typing.AbstractSet[_util_enums.OperatorReturn]:
         processed: int = 0
         object: _bpy.types.Object
@@ -252,19 +258,19 @@ class FixRigifyRigAnimationData(_bpy.types.Operator):
 @_util_types.internal_operator(uuid='9c6c6894-c400-4edc-a21a-2bcb230c8f2a')
 class DrawFunc(_bpy.types.Operator):
     @classmethod
-    def VIEW3D_MT_object_draw_func(cls: type[_typing.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
+    def VIEW3D_MT_object_draw_func(cls: type[_util_polyfill.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
         layout: _bpy.types.UILayout = self.layout
         layout.separator()
         layout.operator(ConfigureEEVEEVolumetrics.bl_idname)
 
     @classmethod
-    def VIEW3D_MT_object_collection_draw_func(cls: type[_typing.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
+    def VIEW3D_MT_object_collection_draw_func(cls: type[_util_polyfill.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
         layout: _bpy.types.UILayout = self.layout
         layout.separator()
         layout.operator(MergeWallCollection.bl_idname)
 
     @classmethod
-    def VIEW3D_MT_object_animation_draw_func(cls: type[_typing.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
+    def VIEW3D_MT_object_animation_draw_func(cls: type[_util_polyfill.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
         layout: _bpy.types.UILayout = self.layout
         if FixRigifyRigAnimationData.poll(context):
             layout.separator()

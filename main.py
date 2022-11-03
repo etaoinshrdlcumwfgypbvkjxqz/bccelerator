@@ -1,3 +1,5 @@
+# -*- coding: bccelerator-transform-UTF-8 -*-
+
 import types as _types
 import typing as _typing
 
@@ -15,5 +17,5 @@ def register() -> None:
 
 def unregister() -> None:
     module: _types.ModuleType
-    for module in _modules:
+    for module in reversed(_modules):
         module.unregister()

@@ -1,3 +1,5 @@
+# -*- coding: bccelerator-transform-UTF-8 -*-
+
 # animation
 
 import bpy as _bpy
@@ -6,6 +8,7 @@ import typing as _typing
 
 from .. import util as _util
 from ..util import enums as _util_enums
+from ..util import polyfill as _util_polyfill
 from ..util import types as _util_types
 from ..util import utils as _util_utils
 
@@ -76,7 +79,7 @@ class CopySelectedNLATrack(_bpy.types.Operator):
 
     @classmethod
     def poll(  # type: ignore
-            cls: type[_typing.Self], context: _bpy.types.Context
+            cls: type[_util_polyfill.Self], context: _bpy.types.Context
     ) -> bool:
         nla_track: _bpy.types.NlaTrack | None = context.active_nla_track
         if nla_track is None:
@@ -84,7 +87,7 @@ class CopySelectedNLATrack(_bpy.types.Operator):
         return any(obj is not nla_track.id_data for obj in context.selected_objects)
 
     def execute(  # type: ignore
-        self: _typing.Self, context: _bpy.types.Context
+        self: _util_polyfill.Self, context: _bpy.types.Context
     ) -> _typing.AbstractSet[_util_enums.OperatorReturn]:
         processed: int = 0
         from_track: _bpy.types.NlaTrack = context.active_nla_track
@@ -159,12 +162,12 @@ class RandomizeSelectedNLAStrip(_bpy.types.Operator):
 
     @classmethod
     def poll(  # type: ignore
-            cls: type[_typing.Self], context: _bpy.types.Context
+            cls: type[_util_polyfill.Self], context: _bpy.types.Context
     ) -> bool:
         return bool(context.selected_nla_strips)
 
     def execute(  # type: ignore
-        self: _typing.Self, context: _bpy.types.Context
+        self: _util_polyfill.Self, context: _bpy.types.Context
     ) -> _typing.AbstractSet[_util_enums.OperatorReturn]:
         processed: int = 0
         nla_strip: _bpy.types.NlaStrip
@@ -217,7 +220,7 @@ class RandomizeSelectedNLAStrip(_bpy.types.Operator):
 @_util_types.internal_operator(uuid='f11f0af4-bbec-44d0-9ceb-4386f07ef2c6')
 class DrawFunc(_bpy.types.Operator):
     @classmethod
-    def NLA_MT_edit_draw_func(cls: type[_typing.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
+    def NLA_MT_edit_draw_func(cls: type[_util_polyfill.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
         layout: _bpy.types.UILayout = self.layout
         layout.separator()
         layout.operator(CopySelectedNLATrack.bl_idname)

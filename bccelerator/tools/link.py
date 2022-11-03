@@ -1,3 +1,5 @@
+# -*- coding: bccelerator-transform-UTF-8 -*-
+
 # using libraries
 
 import bpy as _bpy
@@ -7,6 +9,7 @@ import typing as _typing
 
 from .. import util as _util
 from ..util import enums as _util_enums
+from ..util import polyfill as _util_polyfill
 from ..util import props as _util_props
 from ..util import types as _util_types
 from ..util import utils as _util_utils
@@ -33,7 +36,7 @@ class LinkModifierByName(_bpy.types.Operator):
 
     @classmethod
     def poll(  # type: ignore
-            cls: type[_typing.Self], context: _bpy.types.Context
+            cls: type[_util_polyfill.Self], context: _bpy.types.Context
     ) -> bool:
         active_object: _bpy.types.Object = context.active_object
         return (len(context.selected_objects) >= 2
@@ -41,7 +44,7 @@ class LinkModifierByName(_bpy.types.Operator):
                 and _util.intersection2(active_object.modifiers)[0].active is not None)
 
     def execute(  # type: ignore
-        self: _typing.Self, context: _bpy.types.Context
+        self: _util_polyfill.Self, context: _bpy.types.Context
     ) -> _typing.AbstractSet[_util_enums.OperatorReturn]:
         modifiers: int = 0
         drivers: int = 0
@@ -114,46 +117,40 @@ class ChangeLibraryOverrideEditable(_bpy.types.Operator):
                                                      options={
                                                          _util_enums.PropertyFlagEnum.SKIP_SAVE},
                                                  )]]
-    selection_set_items: _typing.ClassVar[_typing.Mapping[str, _util_props.EnumPropertyItem[str]]] = _types.MappingProxyType({
-        'SELECTED': _util_props.EnumPropertyItem[str](
+    selection_set_items: _typing.ClassVar[_typing.Mapping[str, _util_props.EnumPropertyItem4]] = _types.MappingProxyType({
+        'SELECTED': _util_props.enum_property_item(
             'SELECTED',
             'Selected',
             'Apply the operation over selected data-block(s) only',
             number=0
         ),
-        'CONTENT': _util_props.EnumPropertyItem[str](
+        'CONTENT': _util_props.enum_property_item(
             'CONTENT',
             'Content',
             'Apply the operation over content of the selected item(s) only (the data-block(s) in their sub-tree(s))',
             number=1
         ),
-        'SELECTED_AND_CONTENT': _util_props.EnumPropertyItem[str](
+        'SELECTED_AND_CONTENT': _util_props.enum_property_item(
             'SELECTED_AND_CONTENT',
             'Selected & Content',
             'Apply the operation over selected data-block(s) and all their dependency(s)',
             number=2
         ),
     })
-    selection_set: _typing.ClassVar[_typing.Annotated[str,
-                                                      (_bpy.props.EnumProperty  # type: ignore
-                                                       )(
-                                                          name='Selection Set',
-                                                          items=selection_set_items.values(),  # type: ignore
-                                                          description='Over which part of the tree item(s) to apply the operation',
-                                                          default='SELECTED',
-                                                          options={
-                                                              _util_enums.PropertyFlagEnum.SKIP_SAVE}
-                                                      )]]
+    selection_set: _typing.Annotated[str,
+                                     _bpy.props.EnumProperty  # type: ignore
+                                     ]
 
     @classmethod
     def poll(  # type: ignore
-            cls: type[_typing.Self], context: _bpy.types.Context
+            cls: type[_util_polyfill.Self], context: _bpy.types.Context
     ) -> bool:
-        return (context.space_data.type == _util_enums.SpaceType.OUTLINER
+        return (context.space_data is not None
+                and context.space_data.type == _util_enums.SpaceType.OUTLINER
                 and any(id.override_library is not None for id in context.selected_ids))
 
     def execute(  # type: ignore
-        self: _typing.Self, context: _bpy.types.Context
+        self: _util_polyfill.Self, context: _bpy.types.Context
     ) -> _typing.AbstractSet[_util_enums.OperatorReturn]:
         processed: int = 0
 
@@ -189,10 +186,20 @@ class ChangeLibraryOverrideEditable(_bpy.types.Operator):
         return {_util_enums.OperatorReturn.FINISHED} if processed > 0 else {_util_enums.OperatorReturn.CANCELLED}
 
 
+ChangeLibraryOverrideEditable.__annotations__['selection_set'] = (_bpy.props.EnumProperty  # type: ignore
+                                                                  )(
+    name='Selection Set',
+    items=ChangeLibraryOverrideEditable.selection_set_items.values(),  # type: ignore
+    description='Over which part of the tree item(s) to apply the operation',
+    default='SELECTED',
+    options={_util_enums.PropertyFlagEnum.SKIP_SAVE, }
+)
+
+
 class _LibraryOverrideEditableMenu(_bpy.types.Menu):
     __editable: _typing.ClassVar[bool]
 
-    def __init_subclass__(cls: type[_typing.Self], editable: bool, **kwargs: _typing.Any) -> None:
+    def __init_subclass__(cls: type[_util_polyfill.Self], editable: bool, **kwargs: _typing.Any) -> None:
         super().__init_subclass__(**kwargs)
         cls.__editable = editable
         cls.bl_idname: _typing.ClassVar[str] = (  # type: ignore
@@ -202,7 +209,7 @@ class _LibraryOverrideEditableMenu(_bpy.types.Menu):
             'Editable' if editable else 'Non-Editable'
         )
 
-    def draw(self: _typing.Self, context: _bpy.types.Context) -> None:
+    def draw(self: _util_polyfill.Self, context: _bpy.types.Context) -> None:
         for selection_set in ChangeLibraryOverrideEditable.selection_set_items.values():
             op = self.layout.operator(ChangeLibraryOverrideEditable.bl_idname,
                                       text=selection_set[1])
@@ -220,21 +227,29 @@ class DrawFunc(_bpy.types.Operator):
         for editable in (True, False)
     )
 
-    register: _typing.ClassVar[_typing.Callable[[], None]]
-    unregister: _typing.ClassVar[_typing.Callable[[], None]]
-    register, unregister = _util_utils.register_classes_factory((
+    __register: _typing.ClassVar[_typing.Callable[[], None]]
+    __unregister: _typing.ClassVar[_typing.Callable[[], None]]
+    __register, __unregister = _util_utils.register_classes_factory((
         editable_menu,
-        noneditable_menu
-    ), class_method=True)
+        noneditable_menu,
+    ))
 
     @classmethod
-    def VIEW3D_MT_make_links_draw_func(cls: type[_typing.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
+    def register(cls: type[_util_polyfill.Self]) -> None:
+        cls.__register()
+
+    @classmethod
+    def unregister(cls: type[_util_polyfill.Self]) -> None:
+        cls.__unregister()
+
+    @classmethod
+    def VIEW3D_MT_make_links_draw_func(cls: type[_util_polyfill.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
         layout: _bpy.types.UILayout = self.layout
         layout.separator()
         layout.operator(LinkModifierByName.bl_idname)
 
     @classmethod
-    def OUTLINER_MT_liboverride_draw_func(cls: type[_typing.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
+    def OUTLINER_MT_liboverride_draw_func(cls: type[_util_polyfill.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
         layout: _bpy.types.UILayout = self.layout
         layout.separator()
         layout.menu(cls.editable_menu.bl_idname)

@@ -1,3 +1,5 @@
+# -*- coding: bccelerator-transform-UTF-8 -*-
+
 import bpy as _bpy
 import functools as _functools
 import itertools as _itertools

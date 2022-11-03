@@ -1,3 +1,5 @@
+# -*- coding: bccelerator-transform-UTF-8 -*-
+
 # library management
 
 import bpy as _bpy
@@ -7,6 +9,7 @@ import typing as _typing
 from .. import util as _util
 from ..util import data as _util_data
 from ..util import enums as _util_enums
+from ..util import polyfill as _util_polyfill
 from ..util import types as _util_types
 from ..util import utils as _util_utils
 
@@ -26,13 +29,14 @@ class RemapUserToLibraryByName(_bpy.types.Operator):
 
     @classmethod
     def poll(  # type: ignore
-            cls: type[_typing.Self], context: _bpy.types.Context
+            cls: type[_util_polyfill.Self], context: _bpy.types.Context
     ) -> bool:
-        return (context.space_data.type == _util_enums.SpaceType.OUTLINER
+        return (context.space_data is not None
+                and context.space_data.type == _util_enums.SpaceType.OUTLINER
                 and any(id.library is None for id in context.selected_ids))
 
     def execute(  # type: ignore
-        self: _typing.Self, context: _bpy.types.Context
+        self: _util_polyfill.Self, context: _bpy.types.Context
     ) -> _typing.AbstractSet[_util_enums.OperatorReturn]:
         processed: int = 0
         local_users: _typing.Mapping[tuple[type[_bpy.types.ID], str], _bpy.types.ID] = _types.MappingProxyType(
@@ -72,23 +76,26 @@ class RemapUserToLocalByName(_bpy.types.Operator):
 
     @classmethod
     def poll(  # type: ignore
-            cls: type[_typing.Self], context: _bpy.types.Context
+            cls: type[_util_polyfill.Self], context: _bpy.types.Context
     ) -> bool:
-        return (context.space_data.type == _util_enums.SpaceType.OUTLINER
+        return (context.space_data is not None
+                and context.space_data.type == _util_enums.SpaceType.OUTLINER
                 and any(id.library is not None for id in context.selected_ids))
 
     def execute(  # type: ignore
-        self: _typing.Self, context: _bpy.types.Context
+        self: _util_polyfill.Self, context: _bpy.types.Context
     ) -> _typing.AbstractSet[_util_enums.OperatorReturn]:
         processed: int = 0
+        all_data: _typing.Mapping[type[_bpy.types.ID],
+                                  _bpy.types.bpy_prop_collection[_bpy.types.ID]] = _util_data.all(context)
         lib_user: _bpy.types.ID
         local_user: _bpy.types.ID
         for lib_user, local_user in (
-                (id, _util_data.all[type(id)]
-                 [_typing.cast(_typing.Any, (id.name, None))])
+                (id, all_data[type(id)][_typing.cast(
+                    _typing.Any, (id.name, None))])
                 for id in context.selected_ids
                 if id.library is not None
-            and _typing.cast(_typing.Any, (id.name, None)) in _util_data.all[type(id)]
+            and _typing.cast(_typing.Any, (id.name, None)) in all_data[type(id)]
         ):
             lib_user.user_remap(local_user)
             processed += 1
@@ -114,12 +121,14 @@ class LocalizeLibrary(_bpy.types.Operator):
 
     @classmethod
     def poll(  # type: ignore
-            cls: type[_typing.Self], context: _bpy.types.Context
+            cls: type[_util_polyfill.Self], context: _bpy.types.Context
     ) -> bool:
-        return context.space_data.type == _util_enums.SpaceType.OUTLINER and any(isinstance(id, _bpy.types.Library) for id in context.selected_ids)
+        return (context.space_data is not None
+                and context.space_data.type == _util_enums.SpaceType.OUTLINER
+                and any(isinstance(id, _bpy.types.Library) for id in context.selected_ids))
 
     def execute(  # type: ignore
-        self: _typing.Self, context: _bpy.types.Context
+        self: _util_polyfill.Self, context: _bpy.types.Context
     ) -> _typing.AbstractSet[_util_enums.OperatorReturn]:
         users: _typing.Collection[_bpy.types.ID] = tuple(user
                                                          for lib in context.selected_ids if isinstance(lib, _bpy.types.Library)
@@ -162,10 +171,10 @@ class CleanUpLibraryWeakReference(_bpy.types.Operator):
     )
 
     def execute(  # type: ignore
-        self: _typing.Self, context: _bpy.types.Context
+        self: _util_polyfill.Self, context: _bpy.types.Context
     ) -> _typing.AbstractSet[_util_enums.OperatorReturn]:
         data: _typing.Collection[_bpy.types.ID] = tuple(datum
-                                                        for data in _util_data.all.values()
+                                                        for data in _util_data.all(context).values()
                                                         for datum in data
                                                         if datum.library_weak_reference is not None
                                                         and _typing.cast(_bpy.types.Library | None, datum.library) is None)
@@ -202,7 +211,7 @@ class CleanUpLibraryWeakReference(_bpy.types.Operator):
 @_util_types.internal_operator(uuid='2947869a-43a8-4f91-bb19-20ffca18edce')
 class DrawFunc(_bpy.types.Operator):
     @classmethod
-    def OUTLINER_MT_context_menu_draw_func(cls: type[_typing.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
+    def OUTLINER_MT_context_menu_draw_func(cls: type[_util_polyfill.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
         layout: _bpy.types.UILayout = self.layout
         lambdas: _typing.MutableSequence[_typing.Callable[[
         ], _typing.Any | None]] = []
@@ -222,15 +231,15 @@ class DrawFunc(_bpy.types.Operator):
                 lamb()
 
     @classmethod
-    def OUTLINER_MT_collection_draw_func(cls: type[_typing.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
+    def OUTLINER_MT_collection_draw_func(cls: type[_util_polyfill.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
         cls.OUTLINER_MT_context_menu_draw_func(self, context)
 
     @classmethod
-    def OUTLINER_MT_object_draw_func(cls: type[_typing.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
+    def OUTLINER_MT_object_draw_func(cls: type[_util_polyfill.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
         cls.OUTLINER_MT_context_menu_draw_func(self, context)
 
     @classmethod
-    def TOPBAR_MT_file_cleanup_draw_func(cls: type[_typing.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
+    def TOPBAR_MT_file_cleanup_draw_func(cls: type[_util_polyfill.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
         layout: _bpy.types.UILayout = self.layout
         layout.separator()
         layout.operator(CleanUpLibraryWeakReference.bl_idname,

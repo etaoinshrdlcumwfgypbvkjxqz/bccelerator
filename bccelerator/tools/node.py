@@ -1,3 +1,5 @@
+# -*- coding: bccelerator-transform-UTF-8 -*-
+
 # node editor
 
 import bpy as _bpy
@@ -5,6 +7,7 @@ import typing as _typing
 
 from .. import util as _util
 from ..util import enums as _util_enums
+from ..util import polyfill as _util_polyfill
 from ..util import types as _util_types
 from ..util import utils as _util_utils
 
@@ -24,14 +27,15 @@ class MakeLinksByName(_bpy.types.Operator):
 
     @classmethod
     def poll(  # type: ignore
-        cls: type[_typing.Self], context: _bpy.types.Context
+        cls: type[_util_polyfill.Self], context: _bpy.types.Context
     ) -> bool:
-        return (context.space_data.type == _util_enums.SpaceType.NODE_EDITOR
+        return (context.space_data is not None
+                and context.space_data.type == _util_enums.SpaceType.NODE_EDITOR
                 and context.active_node is not None
                 and len(context.selected_nodes) >= 2)
 
     def execute(  # type: ignore
-        self: _typing.Self, context: _bpy.types.Context
+        self: _util_polyfill.Self, context: _bpy.types.Context
     ) -> _typing.AbstractSet[_util_enums.OperatorReturn]:
         processed: int = 0
         node_tree: _bpy.types.NodeTree = _typing.cast(
@@ -64,14 +68,15 @@ class ConfigurePrincipledMaterialDriver(_bpy.types.Operator):
 
     @classmethod
     def poll(  # type: ignore
-        cls: type[_typing.Self], context: _bpy.types.Context
+        cls: type[_util_polyfill.Self], context: _bpy.types.Context
     ) -> bool:
-        return (context.space_data.type == _util_enums.SpaceType.NODE_EDITOR
+        return (context.space_data is not None
+                and context.space_data.type == _util_enums.SpaceType.NODE_EDITOR
                 and context.material is not None
                 and context.active_node is not None)
 
     def execute(  # type: ignore
-        self: _typing.Self, context: _bpy.types.Context
+        self: _util_polyfill.Self, context: _bpy.types.Context
     ) -> _typing.AbstractSet[_util_enums.OperatorReturn]:
         processed: int = 0
         material: _bpy.types.Material = context.material
@@ -148,7 +153,7 @@ class ConfigurePrincipledMaterialDriver(_bpy.types.Operator):
 @_util_types.internal_operator(uuid='d409c199-6017-4a76-a2e1-58628b8a76dd')
 class DrawFunc(_bpy.types.Operator):
     @classmethod
-    def NODE_MT_node_draw_func(cls: type[_typing.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
+    def NODE_MT_node_draw_func(cls: type[_util_polyfill.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
         layout: _bpy.types.UILayout = self.layout
         layout.separator()
         layout.operator(MakeLinksByName.bl_idname)

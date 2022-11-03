@@ -1,3 +1,5 @@
+# -*- coding: bccelerator-transform-UTF-8 -*-
+
 import bpy as _bpy
 import functools as _functools
 import typing as _typing
@@ -49,35 +51,26 @@ def unregister_class(cls: type[_bpy.types.bpy_struct]) -> None:
         rna_id: str = '_OT_'.join(bl_idname_parts)
     else:
         rna_id = getattr(cls, 'bl_idname')
-
     (_bpy.utils.unregister_class  # type: ignore
-     )((cls.bl_rna_get_subclass_py  # type: ignore
-        )(rna_id)
-       )
+     )(getattr(_bpy.types.bpy_struct, 'bl_rna_get_subclass_py')(rna_id))
 
 
 def register_classes(classes: _typing.Iterable[type[_bpy.types.bpy_struct]]) -> None:
     cls: type[_bpy.types.bpy_struct]
     for cls in classes:
+        print(f'REGISTER: {cls}@{id(cls)}')
         register_class(cls)
 
 
 def unregister_classes(classes: _typing.Iterable[type[_bpy.types.bpy_struct]]) -> None:
     cls: type[_bpy.types.bpy_struct]
     for cls in classes:
+        print(f'UNREGISTER: {cls}@{id(cls)}')
         unregister_class(cls)
 
 
-def register_classes_factory(classes: _typing.Sequence[type[_bpy.types.bpy_struct]], *,
-                             class_method: bool = False
-                             ) -> tuple[_typing.Callable[[], None], _typing.Callable[[], None]]:
-    def decorate(func: _typing.Callable[[], None]) -> _typing.Callable[[], None]:
-        if class_method:
-            func0: classmethod[None] = classmethod(ignore_args(func))
-            assert isinstance(func0, _typing.Callable)
-            func = func0
-        return func
-    return (decorate(_functools.partial(register_classes, classes)), _functools.partial(unregister_classes, reversed(classes)))
+def register_classes_factory(classes: _typing.Sequence[type[_bpy.types.bpy_struct]]) -> tuple[_typing.Callable[[], None], _typing.Callable[[], None]]:
+    return (_functools.partial(register_classes, classes), _functools.partial(unregister_classes, reversed(classes)))
 
 
 def ensure_animation_data(id: _bpy.types.ID) -> _bpy.types.AnimData:
@@ -85,11 +78,3 @@ def ensure_animation_data(id: _bpy.types.ID) -> _bpy.types.AnimData:
     if animd is None:
         animd = id.animation_data_create()
     return animd
-
-
-def main(*, register: _typing.Callable[[], None], unregister: _typing.Callable[[], None]) -> None:
-    try:
-        unregister()
-    except Exception:
-        pass
-    register()
