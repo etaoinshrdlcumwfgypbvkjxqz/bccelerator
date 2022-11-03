@@ -58,14 +58,12 @@ def unregister_class(cls: type[_bpy.types.bpy_struct]) -> None:
 def register_classes(classes: _typing.Iterable[type[_bpy.types.bpy_struct]]) -> None:
     cls: type[_bpy.types.bpy_struct]
     for cls in classes:
-        print(f'REGISTER: {cls}@{id(cls)}')
         register_class(cls)
 
 
 def unregister_classes(classes: _typing.Iterable[type[_bpy.types.bpy_struct]]) -> None:
     cls: type[_bpy.types.bpy_struct]
     for cls in classes:
-        print(f'UNREGISTER: {cls}@{id(cls)}')
         unregister_class(cls)
 
 
