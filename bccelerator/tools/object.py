@@ -61,6 +61,7 @@ def _select_face_doubles(mesh: _bpy.types.Mesh) -> None:
 
 class ConfigureEEVEEVolumetrics(_bpy.types.Operator):
     '''Configure EEVEE volumetrics for selected object(s)'''
+    __slots__: _typing.ClassVar = ()
     bl_idname: _typing.ClassVar[str] = (  # type: ignore
         'object.configure_eevee_volumetrics'
     )
@@ -142,6 +143,7 @@ ConfigureEEVEEVolumetrics.__annotations__['mode'] = (_bpy.props.EnumProperty  # 
 
 class MergeWallCollection(_bpy.types.Operator):
     '''Merge a collection of wall(s) into an object'''
+    __slots__: _typing.ClassVar = ()
     bl_idname: _typing.ClassVar[str] = (  # type: ignore
         'object.merge_wall_collection'
     )
@@ -211,6 +213,7 @@ class MergeWallCollection(_bpy.types.Operator):
 
 class FixRigifyRigAnimationData(_bpy.types.Operator):
     '''Fix animation data of selected rig(s) created by Rigify'''
+    __slots__: _typing.ClassVar = ()
     bl_idname: _typing.ClassVar[str] = (  # type: ignore
         'rigify.fix_animation_data'
     )
@@ -257,6 +260,8 @@ class FixRigifyRigAnimationData(_bpy.types.Operator):
 @_util_types.draw_func_class
 @_util_types.internal_operator(uuid='9c6c6894-c400-4edc-a21a-2bcb230c8f2a')
 class DrawFunc(_bpy.types.Operator):
+    __slots__: _typing.ClassVar = ()
+
     @classmethod
     def VIEW3D_MT_object_draw_func(cls: type[_util_polyfill.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
         layout: _bpy.types.UILayout = self.layout

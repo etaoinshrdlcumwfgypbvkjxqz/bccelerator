@@ -22,6 +22,8 @@ else:
         raise TypeError(f'{self} is not subscriptable')
 
     class StrEnum(str, _enum.Enum):
+        __slots__: _typing.ClassVar = ()
+
         '''Enum where members are also (and must be) strings.'''
 
         def __new__(cls: type[Self], *values: _typing.Any) -> Self:

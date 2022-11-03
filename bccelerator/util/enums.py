@@ -9,6 +9,8 @@ from . import polyfill as _polyfill
 @_typing.final
 @_enum.unique
 class ContextMode(_polyfill.StrEnum):
+    __slots__: _typing.ClassVar = ()
+
     EDIT_MESH: _typing.ClassVar = 'EDIT_MESH'
     EDIT_CURVE: _typing.ClassVar = 'EDIT_CURVE'
     EDIT_CURVES: _typing.ClassVar = 'EDIT_CURVES'
@@ -34,9 +36,13 @@ class ContextMode(_polyfill.StrEnum):
 
 @_typing.final
 class Driver:
+    __slots__: _typing.ClassVar = ()
+
     @_typing.final
     @_enum.unique
     class Type(_polyfill.StrEnum):
+        __slots__: _typing.ClassVar = ()
+
         AVERAGE: _typing.ClassVar = 'AVERAGE'
         SUM: _typing.ClassVar = 'SUM'
         SCRIPTED: _typing.ClassVar = 'SCRIPTED'
@@ -46,9 +52,13 @@ class Driver:
 
 @_typing.final
 class DriverVariable:
+    __slots__: _typing.ClassVar = ()
+
     @_typing.final
     @_enum.unique
     class Type(_polyfill.StrEnum):
+        __slots__: _typing.ClassVar = ()
+
         SINGLE_PROP: _typing.ClassVar = 'SINGLE_PROP'
         TRANSFORMS: _typing.ClassVar = 'TRANSFORMS'
         ROTATION_DIFF: _typing.ClassVar = 'ROTATION_DIFF'
@@ -58,6 +68,8 @@ class DriverVariable:
 @_typing.final
 @_enum.unique
 class IDType(_polyfill.StrEnum):
+    __slots__: _typing.ClassVar = ()
+
     ACTION: _typing.ClassVar = 'ACTION'
     ARMATURE: _typing.ClassVar = 'ARMATURE'
     BRUSH: _typing.ClassVar = 'BRUSH'
@@ -100,9 +112,13 @@ class IDType(_polyfill.StrEnum):
 
 @_typing.final
 class Material:
+    __slots__: _typing.ClassVar = ()
+
     @_typing.final
     @_enum.unique
     class BlendMethod(_polyfill.StrEnum):
+        __slots__: _typing.ClassVar = ()
+
         OPAQUE: _typing.ClassVar = 'OPAQUE'
         CLIP: _typing.ClassVar = 'CLIP'
         HASHED: _typing.ClassVar = 'HASHED'
@@ -111,6 +127,8 @@ class Material:
     @_typing.final
     @_enum.unique
     class ShadowMethod(_polyfill.StrEnum):
+        __slots__: _typing.ClassVar = ()
+
         NONE: _typing.ClassVar = 'NONE'
         OPAQUE: _typing.ClassVar = 'OPAQUE'
         CLIP: _typing.ClassVar = 'CLIP'
@@ -119,9 +137,13 @@ class Material:
 
 @_typing.final
 class NLAStrip:
+    __slots__: _typing.ClassVar = ()
+
     @_typing.final
     @_enum.unique
     class Type(_polyfill.StrEnum):
+        __slots__: _typing.ClassVar = ()
+
         CLIP: _typing.ClassVar = 'CLIP'
         TRANSITION: _typing.ClassVar = 'TRANSITION'
         META: _typing.ClassVar = 'META'
@@ -130,9 +152,13 @@ class NLAStrip:
 
 @_typing.final
 class Object:
+    __slots__: _typing.ClassVar = ()
+
     @_typing.final
     @_enum.unique
     class InstanceType(_polyfill.StrEnum):
+        __slots__: _typing.ClassVar = ()
+
         NONE: _typing.ClassVar = 'NONE'
         VERTS: _typing.ClassVar = 'VERTS'
         FACES: _typing.ClassVar = 'FACES'
@@ -142,6 +168,8 @@ class Object:
 @_typing.final
 @_enum.unique
 class ObjectModifierType(_polyfill.StrEnum):
+    __slots__: _typing.ClassVar = ()
+
     DATA_TRANSFER: _typing.ClassVar = 'DATA_TRANSFER'
     MESH_CACHE: _typing.ClassVar = 'MESH_CACHE'
     MESH_SEQUENCE_CACHE: _typing.ClassVar = 'MESH_SEQUENCE_CACHE'
@@ -204,6 +232,8 @@ class ObjectModifierType(_polyfill.StrEnum):
 @_typing.final
 @_enum.unique
 class OperatorReturn(_polyfill.StrEnum):
+    __slots__: _typing.ClassVar = ()
+
     RUNNING_MODAL: _typing.ClassVar = 'RUNNING_MODAL'
     CANCELLED: _typing.ClassVar = 'CANCELLED'
     FINISHED: _typing.ClassVar = 'FINISHED'
@@ -214,6 +244,8 @@ class OperatorReturn(_polyfill.StrEnum):
 @_typing.final
 @_enum.unique
 class OperatorTypeFlag(_polyfill.StrEnum):
+    __slots__: _typing.ClassVar = ()
+
     REGISTER: _typing.ClassVar = 'REGISTER'
     UNDO: _typing.ClassVar = 'UNDO'
     UNDO_GROUPED: _typing.ClassVar = 'UNDO_GROUPED'
@@ -230,6 +262,8 @@ class OperatorTypeFlag(_polyfill.StrEnum):
 @_typing.final
 @_enum.unique
 class PropertyFlagEnum(_polyfill.StrEnum):
+    __slots__: _typing.ClassVar = ()
+
     HIDDEN: _typing.ClassVar = 'HIDDEN'
     SKIP_SAVE: _typing.ClassVar = 'SKIP_SAVE'
     ANIMATABLE: _typing.ClassVar = 'ANIMATABLE'
@@ -240,6 +274,8 @@ class PropertyFlagEnum(_polyfill.StrEnum):
 @_typing.final
 @_enum.unique
 class PropertySubtype(_polyfill.StrEnum):
+    __slots__: _typing.ClassVar = ()
+
     NONE: _typing.ClassVar = 'NONE'
     FILE_PATH: _typing.ClassVar = 'FILE_PATH'
     DIR_PATH: _typing.ClassVar = 'DIR_PATH'
@@ -277,6 +313,8 @@ class PropertySubtype(_polyfill.StrEnum):
 @_typing.final
 @_enum.unique
 class SpaceType(_polyfill.StrEnum):
+    __slots__: _typing.ClassVar = ()
+
     EMPTY: _typing.ClassVar = 'EMPTY'
     VIEW_3D: _typing.ClassVar = 'VIEW_3D'
     IMAGE_EDITOR: _typing.ClassVar = 'IMAGE_EDITOR'
@@ -301,6 +339,8 @@ class SpaceType(_polyfill.StrEnum):
 @_typing.final
 @_enum.unique
 class WMReport(_polyfill.StrEnum):
+    __slots__: _typing.ClassVar = ()
+
     DEBUG: _typing.ClassVar = 'DEBUG'
     INFO: _typing.ClassVar = 'INFO'
     OPERATOR: _typing.ClassVar = 'OPERATOR'

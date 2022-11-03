@@ -17,6 +17,7 @@ from ..util import utils as _util_utils
 
 class LinkModifierByName(_bpy.types.Operator):
     '''Link modifiers from active modifier to modifiers of selected object(s) by name'''
+    __slots__: _typing.ClassVar = ()
     bl_idname: _typing.ClassVar[str] = (  # type: ignore
         'object.link_modifier_by_name'
     )
@@ -97,6 +98,7 @@ class LinkModifierByName(_bpy.types.Operator):
 
 class ChangeLibraryOverrideEditable(_bpy.types.Operator):
     '''Change editability of selected library override(s)'''
+    __slots__: _typing.ClassVar = ()
     bl_idname: _typing.ClassVar[str] = (  # type: ignore
         'outliner.liboverride_editable_operation'
     )
@@ -197,6 +199,7 @@ ChangeLibraryOverrideEditable.__annotations__['selection_set'] = (_bpy.props.Enu
 
 
 class _LibraryOverrideEditableMenu(_bpy.types.Menu):
+    __slots__: _typing.ClassVar = ()
     __editable: _typing.ClassVar[bool]
 
     def __init_subclass__(cls: type[_util_polyfill.Self], editable: bool, **kwargs: _typing.Any) -> None:
@@ -220,10 +223,15 @@ class _LibraryOverrideEditableMenu(_bpy.types.Menu):
 @_util_types.draw_func_class
 @_util_types.internal_operator(uuid='06211866-d898-46d8-b253-14e4cd41dd77')
 class DrawFunc(_bpy.types.Operator):
+    __slots__: _typing.ClassVar = ()
+
     editable_menu: _typing.ClassVar[type[_LibraryOverrideEditableMenu]]
     noneditable_menu: _typing.ClassVar[type[_LibraryOverrideEditableMenu]]
     editable_menu, noneditable_menu = (
-        type('', (_LibraryOverrideEditableMenu,), dict(), editable=editable)
+        type('', (_LibraryOverrideEditableMenu,), {
+            '__annotations__': {'__slots__': _typing.ClassVar, },
+             '__slots__': (),
+             }, editable=editable)
         for editable in (True, False)
     )
 

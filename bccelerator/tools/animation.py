@@ -66,6 +66,7 @@ def _copy_nla_track(to_track: _bpy.types.NlaTrack, from_track: _bpy.types.NlaTra
 
 class CopySelectedNLATrack(_bpy.types.Operator):
     '''Copy selected NLA track(s) to selected object(s)'''
+    __slots__: _typing.ClassVar = ()
     bl_idname: _typing.ClassVar[str] = (  # type: ignore
         'nla.copy_selected_track'
     )
@@ -149,6 +150,7 @@ class CopySelectedNLATrack(_bpy.types.Operator):
 
 class RandomizeSelectedNLAStrip(_bpy.types.Operator):
     '''Randomize time of selected NLA strip(s), preserving order'''
+    __slots__: _typing.ClassVar = ()
     bl_idname: _typing.ClassVar[str] = (  # type: ignore
         'nla.randomize_selected_strip'
     )
@@ -219,6 +221,8 @@ class RandomizeSelectedNLAStrip(_bpy.types.Operator):
 @_util_types.draw_func_class
 @_util_types.internal_operator(uuid='f11f0af4-bbec-44d0-9ceb-4386f07ef2c6')
 class DrawFunc(_bpy.types.Operator):
+    __slots__: _typing.ClassVar = ()
+
     @classmethod
     def NLA_MT_edit_draw_func(cls: type[_util_polyfill.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
         layout: _bpy.types.UILayout = self.layout

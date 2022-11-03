@@ -16,6 +16,7 @@ from ..util import utils as _util_utils
 
 class RemapUserToLibraryByName(_bpy.types.Operator):
     '''Remap selected local data-block(s) to library data-block(s) by name'''
+    __slots__: _typing.ClassVar = ()
     bl_idname: _typing.ClassVar[str] = (  # type: ignore
         'object.remap_user_to_library_by_name'
     )
@@ -63,6 +64,7 @@ class RemapUserToLibraryByName(_bpy.types.Operator):
 
 class RemapUserToLocalByName(_bpy.types.Operator):
     '''Remap selected library data-block(s) to local data-block(s) by name'''
+    __slots__: _typing.ClassVar = ()
     bl_idname: _typing.ClassVar[str] = (  # type: ignore
         'object.remap_user_to_local_by_name'
     )
@@ -108,6 +110,7 @@ class RemapUserToLocalByName(_bpy.types.Operator):
 
 class LocalizeLibrary(_bpy.types.Operator):
     '''Make all data-blocks of selected library(s) local'''
+    __slots__: _typing.ClassVar = ()
     bl_idname: _typing.ClassVar[str] = (  # type: ignore
         'outliner.localize_library'
     )
@@ -159,6 +162,7 @@ class LocalizeLibrary(_bpy.types.Operator):
 
 class CleanUpLibraryWeakReference(_bpy.types.Operator):
     '''Clean up unused weak reference(s) to external library(s)'''
+    __slots__: _typing.ClassVar = ()
     bl_idname: _typing.ClassVar[str] = (  # type: ignore
         'wm.clean_up_library_weak_reference'
     )
@@ -210,6 +214,8 @@ class CleanUpLibraryWeakReference(_bpy.types.Operator):
 @_util_types.draw_func_class
 @_util_types.internal_operator(uuid='2947869a-43a8-4f91-bb19-20ffca18edce')
 class DrawFunc(_bpy.types.Operator):
+    __slots__: _typing.ClassVar = ()
+
     @classmethod
     def OUTLINER_MT_context_menu_draw_func(cls: type[_util_polyfill.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
         layout: _bpy.types.UILayout = self.layout

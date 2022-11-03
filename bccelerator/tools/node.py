@@ -14,6 +14,7 @@ from ..util import utils as _util_utils
 
 class MakeLinksByName(_bpy.types.Operator):
     '''Make links to selected nodes from the active node by socket name'''
+    __slots__: _typing.ClassVar = ()
     bl_idname: _typing.ClassVar[str] = (  # type: ignore
         'node.make_links_by_name'
     )
@@ -55,6 +56,7 @@ class MakeLinksByName(_bpy.types.Operator):
 
 class ConfigurePrincipledMaterialDriver(_bpy.types.Operator):
     '''Configure drivers of material properties from active principled node'''
+    __slots__: _typing.ClassVar = ()
     bl_idname: _typing.ClassVar[str] = (  # type: ignore
         'node.configure_principled_material_driver'
     )
@@ -152,6 +154,8 @@ class ConfigurePrincipledMaterialDriver(_bpy.types.Operator):
 @_util_types.draw_func_class
 @_util_types.internal_operator(uuid='d409c199-6017-4a76-a2e1-58628b8a76dd')
 class DrawFunc(_bpy.types.Operator):
+    __slots__: _typing.ClassVar = ()
+
     @classmethod
     def NODE_MT_node_draw_func(cls: type[_util_polyfill.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
         layout: _bpy.types.UILayout = self.layout

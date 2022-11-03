@@ -37,6 +37,8 @@ def _type_from_data_name(data_name: str) -> type[_bpy.types.ID]:
 
 @_typing.final
 class _BlendDataAll(dict[type[_bpy.types.ID], _bpy.types.bpy_prop_collection[_bpy.types.ID]]):
+    __slots__: _typing.ClassVar = ()
+
     def __missing__(self: _util_polyfill.Self, key: type[_bpy.types.ID]) -> _bpy.types.bpy_prop_collection[_bpy.types.ID]:
         exist_key: type[_bpy.types.ID]
         value: _bpy.types.bpy_prop_collection[_bpy.types.ID]
