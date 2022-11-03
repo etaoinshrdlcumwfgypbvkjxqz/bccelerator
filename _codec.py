@@ -2,6 +2,8 @@ import bpy as _bpy
 import codecs as _codecs
 import io as _io
 import itertools as _itertools
+import json as _json
+import re as _re
 import token as _token
 import tokenize as _tokenize
 import typing as _typing
@@ -12,33 +14,32 @@ _Self: _typing.TypeAlias = _typing.Annotated[_T, 'Self']
 
 class BcceleratorTransform(_codecs.Codec):
     __slots__: _typing.ClassVar = ('__codec',)
-    __delayed_tokens: _typing.AbstractSet[int] = frozenset(
-        {_token.COLON, _token.EQUAL, })
+    __SeralizedType: _typing.TypeAlias = _typing.Sequence[str]
+    __format: str = '# bccelerator-transform: {}\n'
+    __regex: _re.Pattern[str] = _re.compile(
+        r'^# bccelerator-transform: (.+)$', flags=_re.MULTILINE)
 
     def __init__(self: _Self['BcceleratorTransform'], codec: _codecs.CodecInfo) -> None:
         super().__init__()
         self.__codec: _codecs.CodecInfo = codec
 
     def encode(self: _Self['BcceleratorTransform'], input: str, errors: str = 'strict') -> tuple[bytes, int]:
+        match: _re.Match[str] | None = self.__regex.search(input)
+        if match:
+            serialized: self.__SeralizedType = _json.loads(
+                input[match.start(1):match.end(1)])
+        else:
+            serialized = ()
+
         def gen_tokens() -> _typing.Iterator[tuple[int, str]]:
-            comment: bool = False
+            inserts: _typing.Iterator[str] = _itertools.chain(
+                iter(serialized), _itertools.repeat(''))
             token: _tokenize.TokenInfo
             for token in _tokenize.generate_tokens(iter(input.splitlines(keepends=True)).__next__):
-                if comment:
-                    comment = False
-                    if token.exact_type == _token.COMMENT:
-                        yield from map(lambda token: token[:2],
-                                       _tokenize.generate_tokens(
-                                           iter(token.string[1:].splitlines(keepends=True)).__next__)
-                                       )
-                    elif token.exact_type in self.__delayed_tokens:
-                        comment = True
-                    else:
-                        yield token[:2]
-                else:
-                    yield token[:2]
-                    if token.exact_type == _token.NAME and token.string == _bpy.types.bpy_prop_collection.__name__:
-                        comment = True
+                yield token[:2]
+                if token.exact_type == _token.NAME and token.string == _bpy.types.bpy_prop_collection.__name__:
+                    yield from map(lambda token: token[:2],
+                                   _tokenize.generate_tokens(iter(next(inserts).splitlines(keepends=True)).__next__))
         return self.__codec.encode(_tokenize.untokenize(gen_tokens()), errors=errors)
 
     def decode(self: _Self['BcceleratorTransform'], input: bytes, errors: str = 'strict') -> tuple[str, int]:
@@ -48,44 +49,33 @@ class BcceleratorTransform(_codecs.Codec):
 
         def gen_tokens() -> _typing.Iterator[tuple[int, str]]:
             level: int | None = None
-            comment: _io.StringIO = _io.StringIO()
-            write: bool = False
+            deleted: _typing.MutableSequence[_io.StringIO] = []
             token: _tokenize.TokenInfo
             for token in _tokenize.generate_tokens(iter(inter.splitlines(keepends=True)).__next__):
                 if level is None:
-                    if write:
-                        write = False
-                        if token.exact_type in self.__delayed_tokens:
-                            comment.write(token.string)
-                            yield token[:2]
-                        yield (_token.COMMENT, ''.join(_itertools.chain.from_iterable(
-                            zip(_itertools.repeat('#'),
-                                comment.getvalue().splitlines(keepends=True),)
-                        )),)
+                    if token.exact_type == _token.ENDMARKER:
                         yield (_token.NEWLINE, '\n',)
-                        comment.seek(0)
-                        comment.truncate()
-                        if token.exact_type not in self.__delayed_tokens:
-                            yield token[:2]
-                    else:
-                        yield token[:2]
+                        seralized: self.__SeralizedType = tuple(
+                            map(_io.StringIO.getvalue, deleted))
+                        yield (_token.COMMENT, self.__format.format(_json.dumps(seralized, ensure_ascii=True,)),)
+                    yield token[:2]
                     if token.exact_type == _token.NAME and token.string == _bpy.types.bpy_prop_collection.__name__:
                         level = 0
+                        deleted.append(_io.StringIO())
                 else:
                     if token.exact_type == _token.LSQB:
                         level += 1
-                        comment.write(token.string)
+                        deleted[-1].write(token.string)
                     elif token.exact_type == _token.RSQB:
                         level -= 1
-                        comment.write(token.string)
+                        deleted[-1].write(token.string)
                         if level == 0:
                             level = None
-                            write = True
                     elif level == 0:
                         level = None
                         yield token[:2]
                     else:
-                        comment.write(token.string)
+                        deleted[-1].write(token.string)
         return (_tokenize.untokenize(gen_tokens()), consumed,)
 
 
