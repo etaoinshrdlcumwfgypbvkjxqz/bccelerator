@@ -110,15 +110,9 @@ class ChangeLibraryOverrideEditable(_bpy.types.Operator):
             _util_enums.OperatorTypeFlag.REGISTER, _util_enums.OperatorTypeFlag.UNDO, })
     )
 
-    editable: _typing.ClassVar[_typing.Annotated[bool,
-                                                 (_bpy.props.BoolProperty  # type: ignore
-                                                  )(
-                                                     name='Editable',
-                                                     description='Editability',
-                                                     default=False,
-                                                     options={
-                                                         _util_enums.PropertyFlagEnum.SKIP_SAVE},
-                                                 )]]
+    editable: _typing.Annotated[bool,
+                                _bpy.props.BoolProperty,  # type: ignore
+                                ]
     selection_set_items: _typing.ClassVar[_typing.Mapping[str, _util_props.EnumPropertyItem4]] = _types.MappingProxyType({
         'SELECTED': _util_props.enum_property_item(
             'SELECTED',
@@ -140,7 +134,7 @@ class ChangeLibraryOverrideEditable(_bpy.types.Operator):
         ),
     })
     selection_set: _typing.Annotated[str,
-                                     _bpy.props.EnumProperty  # type: ignore
+                                     _bpy.props.EnumProperty,  # type: ignore
                                      ]
 
     @classmethod
@@ -188,6 +182,13 @@ class ChangeLibraryOverrideEditable(_bpy.types.Operator):
         return {_util_enums.OperatorReturn.FINISHED} if processed > 0 else {_util_enums.OperatorReturn.CANCELLED}
 
 
+ChangeLibraryOverrideEditable.__annotations__['editable'] = (_bpy.props.BoolProperty  # type: ignore
+                                                             )(
+    name='Editable',
+    description='Editability',
+    default=False,
+    options={_util_enums.PropertyFlagEnum.SKIP_SAVE, },
+)
 ChangeLibraryOverrideEditable.__annotations__['selection_set'] = (_bpy.props.EnumProperty  # type: ignore
                                                                   )(
     name='Selection Set',
@@ -213,9 +214,10 @@ class _LibraryOverrideEditableMenu(_bpy.types.Menu):
         )
 
     def draw(self: _util_polyfill.Self, context: _bpy.types.Context) -> None:
+        selection_set: _util_props.EnumPropertyItem4
         for selection_set in ChangeLibraryOverrideEditable.selection_set_items.values():
-            op = self.layout.operator(ChangeLibraryOverrideEditable.bl_idname,
-                                      text=selection_set[1])
+            op: _bpy.types.OperatorProperties = self.layout.operator(ChangeLibraryOverrideEditable.bl_idname,
+                                                                     text=selection_set[1])
             setattr(op, 'editable', self.__editable)
             setattr(op, 'selection_set', selection_set[0])
 

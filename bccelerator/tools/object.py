@@ -82,7 +82,7 @@ class ConfigureEEVEEVolumetrics(_bpy.types.Operator):
         'EEVEE': _util_props.enum_property_item('EEVEE', 'EEVEE-Only', 'Enable volumetrics for EEVEE only', number=2),
     })
     mode: _typing.Annotated[str,
-                            _bpy.props.EnumProperty  # type: ignore
+                            _bpy.props.EnumProperty,  # type: ignore
                             ]
     mode_min: _typing.ClassVar[int] = min(
         value[-1] for value in mode_items.values())
