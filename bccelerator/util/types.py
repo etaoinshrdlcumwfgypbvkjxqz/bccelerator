@@ -24,20 +24,18 @@ def draw_func_class(cls: type[_T]) -> type[_T]:
     def register(cls: type[_T]) -> None:
         register_0(cls)
         func_name: str
-        for func_name in (name for name in dir(cls) if '_draw_func' in name):
-            try:
+        for func_name in dir(cls):
+            if '_draw_func' in func_name and func_name not in registry:
                 func: _typing.Callable[[
-                    _typing.Any, _bpy.types.Context], None] = registry[func_name]
-            except KeyError:
-                func0: _typing.Callable[[
                     _typing.Any, _bpy.types.Context], None] = getattr(cls, func_name)
 
-                @_functools.wraps(func0)
-                def wrapper(self: _typing.Any, context: _bpy.types.Context) -> None:
-                    func0(self, context)
-                registry[func_name] = func = wrapper
-                getattr(_bpy.types, func_name[:-
-                        len('_draw_func')]).append(func)
+                @_functools.wraps(func)
+                def wrapper(self: _typing.Any, context: _bpy.types.Context, *,
+                            __func: _typing.Callable[[_typing.Any, _bpy.types.Context], None] = func) -> None:
+                    __func(self, context)
+                registry[func_name] = wrapper
+                getattr(
+                    _bpy.types, func_name[:-len('_draw_func')]).append(wrapper)
 
     @classmethod
     @_functools.wraps(unregister_0)
