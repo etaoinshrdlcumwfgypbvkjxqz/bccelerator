@@ -237,19 +237,19 @@ class DrawFunc(_bpy.types.Operator):
                 lamb()
 
     @classmethod
+    def TOPBAR_MT_file_cleanup_draw_func(cls: type[_util_polyfill.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
+        layout: _bpy.types.UILayout = self.layout
+        layout.separator()
+        layout.operator(CleanUpLibraryWeakReference.bl_idname,
+                        text='Library Weak References')
+
+    @classmethod
     def OUTLINER_MT_collection_draw_func(cls: type[_util_polyfill.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
         cls.OUTLINER_MT_context_menu_draw_func(self, context)
 
     @classmethod
     def OUTLINER_MT_object_draw_func(cls: type[_util_polyfill.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
         cls.OUTLINER_MT_context_menu_draw_func(self, context)
-
-    @classmethod
-    def TOPBAR_MT_file_cleanup_draw_func(cls: type[_util_polyfill.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
-        layout: _bpy.types.UILayout = self.layout
-        layout.separator()
-        layout.operator(CleanUpLibraryWeakReference.bl_idname,
-                        text='Library Weak References')
 
 
 register: _typing.Callable[[], None]

@@ -158,7 +158,9 @@ class MergeWallCollection(_bpy.types.Operator):
     @classmethod
     def poll(  # type: ignore
             cls: type[_util_polyfill.Self], context: _bpy.types.Context) -> bool:
-        return context.mode == _util_enums.ContextMode.OBJECT and context.collection is not None
+        return (context.mode == _util_enums.ContextMode.OBJECT
+                and context.collection is not None
+                and 'wall' in context.collection.name)
 
     def execute(  # type: ignore
             self: _util_polyfill.Self, context: _bpy.types.Context) -> _typing.AbstractSet[_util_enums.OperatorReturn]:
@@ -269,10 +271,11 @@ class DrawFunc(_bpy.types.Operator):
         layout.operator(ConfigureEEVEEVolumetrics.bl_idname)
 
     @classmethod
-    def VIEW3D_MT_object_collection_draw_func(cls: type[_util_polyfill.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
+    def OUTLINER_MT_context_menu_draw_func(cls: type[_util_polyfill.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
         layout: _bpy.types.UILayout = self.layout
-        layout.separator()
-        layout.operator(MergeWallCollection.bl_idname)
+        if MergeWallCollection.poll(context):
+            layout.separator()
+            layout.operator(MergeWallCollection.bl_idname)
 
     @classmethod
     def VIEW3D_MT_object_animation_draw_func(cls: type[_util_polyfill.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
@@ -280,6 +283,14 @@ class DrawFunc(_bpy.types.Operator):
         if FixRigifyRigAnimationData.poll(context):
             layout.separator()
             layout.operator(FixRigifyRigAnimationData.bl_idname)
+
+    @classmethod
+    def OUTLINER_MT_collection_draw_func(cls: type[_util_polyfill.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
+        cls.OUTLINER_MT_context_menu_draw_func(self, context)
+
+    @classmethod
+    def OUTLINER_MT_object_draw_func(cls: type[_util_polyfill.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
+        cls.OUTLINER_MT_context_menu_draw_func(self, context)
 
 
 register: _typing.Callable[[], None]
