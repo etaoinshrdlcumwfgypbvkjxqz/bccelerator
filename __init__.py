@@ -12,7 +12,7 @@ bl_info = {
     'name': 'bccelerator',
     'description': 'Contains tools to accelerate Blender workflow.',
     'author': 'William So',
-    'version': (1, 1, 0),
+    'version': (1, 1, 1),
     'blender': (3, 3, 0),
     'location': 'Multiple locations',
     'warning': '',
