@@ -154,13 +154,17 @@ class ChangeLibraryOverrideEditable(_bpy.types.Operator):
             data: _typing.Iterable[_bpy.types.ID] = context.selected_ids
         elif self.selection_set == 'CONTENT':
             def lamb(id: _bpy.types.ID) -> _typing.Iterable[_bpy.types.ID]:
-                return (_util.intersection2(id.objects)[1]
+                return (_itertools.chain(_util.flatmap(lamb, _util.intersection2(id.children)[1]),
+                                         _util.intersection2(id.objects)[1])
                         if isinstance(id, _bpy.types.Collection)
                         else (id,))
             data = _util.flatmap(lamb, context.selected_ids)
         elif self.selection_set == 'SELECTED_AND_CONTENT':
             def lamb(id: _bpy.types.ID) -> _typing.Iterable[_bpy.types.ID]:
-                return (_itertools.chain((id,), _util.intersection2(id.objects)[1])
+                return (_itertools.chain((id,),
+                                         _util.flatmap(
+                                             lamb, _util.intersection2(id.children)[1]),
+                                         _util.intersection2(id.objects)[1])
                         if isinstance(id, _bpy.types.Collection)
                         else (id,))
             data = _util.flatmap(lamb, context.selected_ids)
