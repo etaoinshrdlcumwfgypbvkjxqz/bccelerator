@@ -314,7 +314,7 @@ class CleanUpCustomProperties(_bpy.types.Operator):
                 self.report({_util_enums.WMReport.INFO},
                             f'Removed {p_keys} custom property(s) from data-block "{datum.name_full}"')
         self.report({_util_enums.WMReport.INFO},
-                    f'Removed {processed} custom properties from {p_data} data-block(s)')
+                    f'Removed {processed} custom property(s) from {p_data} data-block(s)')
         return {_util_enums.OperatorReturn.FINISHED} if processed > 0 else {_util_enums.OperatorReturn.CANCELLED}
 
 
