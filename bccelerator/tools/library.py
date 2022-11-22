@@ -55,9 +55,9 @@ class RemapUserToLibraryByName(_bpy.types.Operator):
         ):
             local_user.user_remap(lib_user)
             processed += 1
-            self.report({str(_util_enums.WMReport.INFO)},
+            self.report({_util_enums.WMReport.INFO},
                         f'Remapped "{local_user.name_full}" to "{lib_user.name_full}"')
-        self.report({str(_util_enums.WMReport.INFO)},
+        self.report({_util_enums.WMReport.INFO},
                     f'Remapped {processed} data-block(s)')
         return {_util_enums.OperatorReturn.FINISHED} if processed > 0 else {_util_enums.OperatorReturn.CANCELLED}
 
@@ -101,9 +101,9 @@ class RemapUserToLocalByName(_bpy.types.Operator):
         ):
             lib_user.user_remap(local_user)
             processed += 1
-            self.report({str(_util_enums.WMReport.INFO)},
+            self.report({_util_enums.WMReport.INFO},
                         f'Remapped "{lib_user.name_full}" to "{local_user.name_full}"')
-        self.report({str(_util_enums.WMReport.INFO)},
+        self.report({_util_enums.WMReport.INFO},
                     f'Remapped {processed} data-block(s)')
         return {_util_enums.OperatorReturn.FINISHED} if processed > 0 else {_util_enums.OperatorReturn.CANCELLED}
 
@@ -142,20 +142,20 @@ class LocalizeLibrary(_bpy.types.Operator):
             user: _bpy.types.ID
             for user in (user.make_local() for user in users):
                 if user.library is None:
-                    self.report({str(_util_enums.WMReport.INFO)},
+                    self.report({_util_enums.WMReport.INFO},
                                 f'Made "{user.name_full}" local')
                 else:
                     retry_users.append(user)
             if len(retry_users) == len(users):
                 for user in users:
-                    self.report({str(_util_enums.WMReport.WARNING)},
+                    self.report({_util_enums.WMReport.WARNING},
                                 f'Cannot make "{user.name_full}" local')
-                self.report({str(_util_enums.WMReport.WARNING)},
+                self.report({_util_enums.WMReport.WARNING},
                             f'Cannot make "{len(users)}" data-block(s) local')
                 break
             users = retry_users
         processed = to_be_processed - len(users)
-        self.report({str(_util_enums.WMReport.INFO)},
+        self.report({_util_enums.WMReport.INFO},
                     f'Made {processed} data-block(s) local')
         return {_util_enums.OperatorReturn.FINISHED} if processed > 0 else {_util_enums.OperatorReturn.CANCELLED}
 
@@ -203,10 +203,10 @@ class CleanUpLibraryWeakReference(_bpy.types.Operator):
             datum.user_remap(new_datum)
             datum.asset_clear()
             new_datum.name = datum.name
-            self.report({str(_util_enums.WMReport.INFO)},
+            self.report({_util_enums.WMReport.INFO},
                         f'Removed library weak reference of "{datum.name}": "{datum.library_weak_reference.filepath}"')
         processed: int = len(data)
-        self.report({str(_util_enums.WMReport.INFO)},
+        self.report({_util_enums.WMReport.INFO},
                     f'Removed {processed} library weak reference(s)')
         return {_util_enums.OperatorReturn.FINISHED} if processed > 0 else {_util_enums.OperatorReturn.CANCELLED}
 

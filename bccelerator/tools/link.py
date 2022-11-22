@@ -89,9 +89,9 @@ class LinkModifierByName(_bpy.types.Operator):
                     to_drivers += len(curves)
                 modifiers += 1
                 drivers += to_drivers
-                self.report({str(_util_enums.WMReport.INFO)},
+                self.report({_util_enums.WMReport.INFO},
                             f'Linked modifier of "{to_object.name_full}" using {to_drivers} driver(s)')
-        self.report({str(_util_enums.WMReport.INFO)},
+        self.report({_util_enums.WMReport.INFO},
                     f'Linked {modifiers} modifier(s) using {drivers} driver(s)')
         return {_util_enums.OperatorReturn.FINISHED} if drivers > 0 else {_util_enums.OperatorReturn.CANCELLED}
 
@@ -169,7 +169,7 @@ class ChangeLibraryOverrideEditable(_bpy.types.Operator):
                         else (id,))
             data = _util.flatmap(lamb, context.selected_ids)
         else:
-            self.report({str(_util_enums.WMReport.ERROR_INVALID_INPUT)},
+            self.report({_util_enums.WMReport.ERROR_INVALID_INPUT},
                         f'Invalid selection set "{self.selection_set}"')
             return {_util_enums.OperatorReturn.CANCELLED}
 
@@ -178,10 +178,10 @@ class ChangeLibraryOverrideEditable(_bpy.types.Operator):
             if datum.override_library is not None:
                 datum.override_library.is_system_override = not self.editable
                 processed += 1
-                self.report({str(_util_enums.WMReport.INFO)},
+                self.report({_util_enums.WMReport.INFO},
                             f'Changed editability of library override "{datum.name_full}"')
 
-        self.report({str(_util_enums.WMReport.INFO)},
+        self.report({_util_enums.WMReport.INFO},
                     f'Changed editability of {processed} data-block(s)')
         return {_util_enums.OperatorReturn.FINISHED} if processed > 0 else {_util_enums.OperatorReturn.CANCELLED}
 

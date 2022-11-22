@@ -124,7 +124,7 @@ class CopySelectedNLATrack(_bpy.types.Operator):
                             new_strip: _bpy.types.NlaStrip = to_track.strips[-1]
                             _copy_nla_strip(new_strip, strip)
                         else:
-                            self.report({str(_util_enums.WMReport.WARNING)},
+                            self.report({_util_enums.WMReport.WARNING},
                                         f'Unsupported NLA strip "{strip.name}"')
                     transition: int
                     for transition in transitions:
@@ -141,9 +141,9 @@ class CopySelectedNLATrack(_bpy.types.Operator):
                     context.scene.frame_current = current_frame
 
                 processed += 1
-                self.report({str(_util_enums.WMReport.INFO)},
+                self.report({_util_enums.WMReport.INFO},
                             f'Copied to object "{obj.name_full}"')
-        self.report({str(_util_enums.WMReport.INFO)},
+        self.report({_util_enums.WMReport.INFO},
                     f'Copied to {processed} object(s)')
         return {_util_enums.OperatorReturn.FINISHED} if processed > 0 else {_util_enums.OperatorReturn.CANCELLED}
 
@@ -182,19 +182,19 @@ class RandomizeSelectedNLAStrip(_bpy.types.Operator):
             try:
                 nla_track: _bpy.types.NlaTrack = next(nla_tracks)
             except StopIteration:
-                self.report({str(_util_enums.WMReport.WARNING)},
+                self.report({_util_enums.WMReport.WARNING},
                             f'Cannot find NLA track for strip "{nla_strip.name}"')
                 continue
             finally:
                 del nla_tracks
             if nla_track.lock:
-                self.report({str(_util_enums.WMReport.WARNING)},
+                self.report({_util_enums.WMReport.WARNING},
                             f'NLA track "{nla_track.name}" for strip "{nla_strip.name}" is locked')
                 continue
             index: int = _util.intersection2(nla_track.strips)[
                 1].find(nla_strip.name)
             if index == -1:
-                self.report({str(_util_enums.WMReport.WARNING)},
+                self.report({_util_enums.WMReport.WARNING},
                             f'Cannot find NLA strip "{nla_strip.name}" in track "{nla_track.name}"')
                 continue
 
@@ -206,14 +206,14 @@ class RandomizeSelectedNLAStrip(_bpy.types.Operator):
                                   else context.scene.frame_end)
                                  - length)
             if start_min > start_max:
-                self.report({str(_util_enums.WMReport.WARNING)},
+                self.report({_util_enums.WMReport.WARNING},
                             f'Cannot randomize NLA strip "{nla_track.name}" [{start_min}, {start_max}]')
                 continue
             nla_strip.frame_start_ui = _random.randint(start_min, start_max)
-            self.report({str(_util_enums.WMReport.INFO)},
+            self.report({_util_enums.WMReport.INFO},
                         f'Randomized NLA strip "{nla_strip.name}"')
             processed += 1
-        self.report({str(_util_enums.WMReport.INFO)},
+        self.report({_util_enums.WMReport.INFO},
                     f'Randomized {processed} NLA strip(s)')
         return {_util_enums.OperatorReturn.FINISHED} if processed > 0 else {_util_enums.OperatorReturn.CANCELLED}
 

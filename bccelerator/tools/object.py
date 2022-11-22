@@ -121,9 +121,9 @@ class ConfigureEEVEEVolumetrics(_bpy.types.Operator):
                 )
             object[self.mode_name] = self.mode_items[self.mode][-1]
             processed += 1
-            self.report({str(_util_enums.WMReport.INFO)},
+            self.report({_util_enums.WMReport.INFO},
                         f'Configured object "{object.name_full}"')
-        self.report({str(_util_enums.WMReport.INFO)},
+        self.report({_util_enums.WMReport.INFO},
                     f'Configured {processed} object(s)')
         return {_util_enums.OperatorReturn.FINISHED} if processed > 0 else {_util_enums.OperatorReturn.CANCELLED}
 
@@ -254,9 +254,9 @@ class FixRigifyRigAnimationData(_bpy.types.Operator):
                 target.id = object
                 targets += 1
             processed += 1
-            self.report({str(_util_enums.WMReport.INFO)},
+            self.report({_util_enums.WMReport.INFO},
                         f'Fixed f{targets} driver target(s) in object "{object.name_full}"')
-        self.report({str(_util_enums.WMReport.INFO)},
+        self.report({_util_enums.WMReport.INFO},
                     f'Fixed {processed} object(s)')
         return {_util_enums.OperatorReturn.FINISHED} if processed > 0 else {_util_enums.OperatorReturn.CANCELLED}
 

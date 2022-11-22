@@ -49,7 +49,7 @@ class MakeLinksByName(_bpy.types.Operator):
                                          for to_socket in node.inputs if to_socket.name in from_sockets[0]):
             _util.intersection2(node_tree.links)[0].new(from_socket, to_socket)
             processed += 1
-        self.report({str(_util_enums.WMReport.INFO)},
+        self.report({_util_enums.WMReport.INFO},
                     f'Made {processed} link(s)')
         return {_util_enums.OperatorReturn.FINISHED} if processed > 0 else {_util_enums.OperatorReturn.CANCELLED}
 
@@ -99,7 +99,7 @@ class ConfigurePrincipledMaterialDriver(_bpy.types.Operator):
                 curve.lock = True
             curves_len: int = len(curves)
             processed += curves_len
-            self.report({str(_util_enums.WMReport.INFO)},
+            self.report({_util_enums.WMReport.INFO},
                         f'Configured {curves_len} material color driver(s)')
         if 'Metallic' in inputs[0] and not _util_utils.has_driver(material, 'metallic'):
             curve = material.driver_add('metallic')
@@ -109,7 +109,7 @@ class ConfigurePrincipledMaterialDriver(_bpy.types.Operator):
                                          )
             curve.lock = True
             processed += 1
-            self.report({str(_util_enums.WMReport.INFO)},
+            self.report({_util_enums.WMReport.INFO},
                         'Configured material metallic driver')
         if 'Roughness' in inputs[0] and not _util_utils.has_driver(material, 'roughness'):
             curve = material.driver_add('roughness')
@@ -119,7 +119,7 @@ class ConfigurePrincipledMaterialDriver(_bpy.types.Operator):
                                          )
             curve.lock = True
             processed += 1
-            self.report({str(_util_enums.WMReport.INFO)},
+            self.report({_util_enums.WMReport.INFO},
                         'Configured material roughness driver')
         if 'Alpha' in inputs[0]:
             if (material.blend_method == _util_enums.Material.BlendMethod.OPAQUE
@@ -132,7 +132,7 @@ class ConfigurePrincipledMaterialDriver(_bpy.types.Operator):
                                              )
                 curve.lock = True
                 processed += 1
-                self.report({str(_util_enums.WMReport.INFO)},
+                self.report({_util_enums.WMReport.INFO},
                             'Configured material blend mode driver')
             if (material.shadow_method == _util_enums.Material.ShadowMethod.OPAQUE
                     and not _util_utils.has_driver(material, 'shadow_method')):
@@ -144,9 +144,9 @@ class ConfigurePrincipledMaterialDriver(_bpy.types.Operator):
                                              )
                 curve.lock = True
                 processed += 1
-                self.report({str(_util_enums.WMReport.INFO)},
+                self.report({_util_enums.WMReport.INFO},
                             'Configured material shadow mode driver')
-        self.report({str(_util_enums.WMReport.INFO)},
+        self.report({_util_enums.WMReport.INFO},
                     f'Configured {processed} material driver(s)')
         return {_util_enums.OperatorReturn.FINISHED} if processed > 0 else {_util_enums.OperatorReturn.CANCELLED}
 
