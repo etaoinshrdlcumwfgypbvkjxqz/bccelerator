@@ -4,6 +4,7 @@
 
 import bmesh as _bmesh
 import bpy as _bpy
+import idprop as _idprop
 import itertools as _itertools
 import math as _math
 import mathutils as _mathutils
@@ -11,6 +12,7 @@ import types as _types
 import typing as _typing
 
 from .. import util as _util
+from ..util import data as _util_data
 from ..util import enums as _util_enums
 from ..util import polyfill as _util_polyfill
 from ..util import props as _util_props
@@ -259,6 +261,63 @@ class FixRigifyRigAnimationData(_bpy.types.Operator):
         return {_util_enums.OperatorReturn.FINISHED} if processed > 0 else {_util_enums.OperatorReturn.CANCELLED}
 
 
+class CleanUpCustomProperties(_bpy.types.Operator):
+    '''Clean up temporary custom properties created by extensions'''
+    __slots__: _typing.ClassVar = ()
+    bl_idname: _typing.ClassVar[str] = (  # type: ignore
+        'wm.clean_up_custom_properties'
+    )
+    bl_label: _typing.ClassVar[str] = (  # type: ignore
+        'Clean Up Custom Properties'
+    )
+    bl_options: _typing.ClassVar[_typing.AbstractSet[_util_enums.OperatorTypeFlag]] = (  # type: ignore
+        frozenset({
+            _util_enums.OperatorTypeFlag.REGISTER, _util_enums.OperatorTypeFlag.UNDO, })
+    )
+
+    delete_keys: _typing.ClassVar[_typing.AbstractSet[str]] = frozenset({
+        # A.N.T. Landscape
+        'ant_landscape',
+        # RetopoFlow
+        'RetopFlow',
+        # Archimesh
+        'DoorObjectGenerator',
+        'WindowObjectGenerator',
+        'archimesh.hole_enable',
+    })
+
+    def execute(  # type: ignore
+        self: _util_polyfill.Self, context: _bpy.types.Context
+    ) -> _typing.AbstractSet[_util_enums.OperatorReturn]:
+        processed: int = 0
+        p_data: int = 0
+        datum: _bpy.types.ID
+        for datum in (datum
+                      for data in _util_data.all(context).values()
+                      for datum in data
+                      if _typing.cast(_bpy.types.Library | None, datum.library) is None):
+            p_keys: int = 0
+            prop: _idprop.types.IDPropertyGroup = _typing.cast(
+                _idprop.types.IDPropertyGroup, datum.id_properties_ensure())
+            delete_key: str
+            for delete_key in self.delete_keys:
+                if delete_key in prop:  # type: ignore
+                    val: _typing.Any | None = (
+                        prop.pop  # type: ignore
+                    )(delete_key)
+                    p_keys += 1
+                    self.report({_util_enums.WMReport.INFO},
+                                f'Removed custom property "{delete_key}" from data-block "{datum.name_full}": {val}')
+            if p_keys > 0:
+                processed += p_keys
+                p_data += 1
+                self.report({_util_enums.WMReport.INFO},
+                            f'Removed {p_keys} custom property(s) from data-block "{datum.name_full}"')
+        self.report({_util_enums.WMReport.INFO},
+                    f'Removed {processed} custom properties from {p_data} data-block(s)')
+        return {_util_enums.OperatorReturn.FINISHED} if processed > 0 else {_util_enums.OperatorReturn.CANCELLED}
+
+
 @_util_types.draw_func_class
 @_util_types.internal_operator(uuid='9c6c6894-c400-4edc-a21a-2bcb230c8f2a')
 class DrawFunc(_bpy.types.Operator):
@@ -285,6 +344,13 @@ class DrawFunc(_bpy.types.Operator):
             layout.operator(FixRigifyRigAnimationData.bl_idname)
 
     @classmethod
+    def TOPBAR_MT_file_cleanup_draw_func(cls: type[_util_polyfill.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
+        layout: _bpy.types.UILayout = self.layout
+        layout.separator()
+        layout.operator(CleanUpCustomProperties.bl_idname,
+                        text='Custom Properties')
+
+    @classmethod
     def OUTLINER_MT_collection_draw_func(cls: type[_util_polyfill.Self], self: _typing.Any, context: _bpy.types.Context) -> None:
         cls.OUTLINER_MT_context_menu_draw_func(self, context)
 
@@ -296,6 +362,7 @@ class DrawFunc(_bpy.types.Operator):
 register: _typing.Callable[[], None]
 unregister: _typing.Callable[[], None]
 register, unregister = _util_utils.register_classes_factory((
+    CleanUpCustomProperties,
     ConfigureEEVEEVolumetrics,
     MergeWallCollection,
     FixRigifyRigAnimationData,

@@ -205,7 +205,7 @@ class CleanUpLibraryWeakReference(_bpy.types.Operator):
             new_datum.name = datum.name
             self.report({str(_util_enums.WMReport.INFO)},
                         f'Removed library weak reference of "{datum.name}": "{datum.library_weak_reference.filepath}"')
-        processed = len(data)
+        processed: int = len(data)
         self.report({str(_util_enums.WMReport.INFO)},
                     f'Removed {processed} library weak reference(s)')
         return {_util_enums.OperatorReturn.FINISHED} if processed > 0 else {_util_enums.OperatorReturn.CANCELLED}
