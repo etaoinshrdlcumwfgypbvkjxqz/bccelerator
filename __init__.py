@@ -11,7 +11,7 @@ bl_info = {
     "name": "bccelerator",
     "description": "Contains tools to accelerate Blender workflow.",
     "author": "William So",
-    "version": (1, 2, 1),
+    "version": (1, 2, 2),
     "blender": (3, 3, 0),
     "location": "Multiple locations",
     "warning": "",
