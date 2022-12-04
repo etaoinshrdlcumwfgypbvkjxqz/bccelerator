@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 # SPDX-License-Identifier: GPL-3.0-or-later
 import codecs as _codecs
 import typing as _typing

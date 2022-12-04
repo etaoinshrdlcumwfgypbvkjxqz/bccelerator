@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 import bpy as _bpy
 import codecs as _codecs
 import io as _io
