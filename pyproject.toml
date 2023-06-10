@@ -25,7 +25,6 @@ classifiers = [
 	"Typing :: Typed",
 ]
 dependencies = [
-	# "bpy>=3.5.0",
 	"fake-bpy-module-latest>=20230526",
 ]
 description = ""
@@ -35,6 +34,14 @@ license = {file = "LICENSE.txt"}
 name = "bccelerator"
 readme = "README.md"
 requires-python = ">=3.10.0"
+
+[project.optional-dependencies]
+all = [
+	"bpy>=3.5.0",
+]
+bpy = [
+	"bpy>=3.5.0",
+]
 
 [project.urls]
 repository = "https://github.com/polyipseity/bccelerator.git"
