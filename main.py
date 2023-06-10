@@ -2,9 +2,9 @@
 import types as _types
 import typing as _typing
 
-from .bccelerator import tools as _bccelerator_tools
+from .core import tools as _core_tools
 
-_modules: _typing.Collection[_types.ModuleType] = tuple(_bccelerator_tools.items())
+_modules: _typing.Collection[_types.ModuleType] = tuple(_core_tools.items())
 
 
 def register() -> None:
