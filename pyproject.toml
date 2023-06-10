@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=65.6.3",]
+build-backend = "setuptools.build_meta"
+
+[project]
+authors = [
+    {name = "William So", email = "polyipseity@gmail.com"},
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+		"Environment :: Plugins",
+    "Intended Audience :: Other Audience",
+    "License :: OSI Approved",
+    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Artistic Software",
+		"Topic :: Multimedia :: Graphics",
+		"Topic :: Multimedia :: Graphics :: 3D Modeling",
+		"Topic :: Multimedia :: Graphics :: 3D Rendering",
+    "Topic :: Utilities",
+    "Typing :: Typed",
+]
+dependencies = [
+    # "bpy>=3.5.0",
+		"fake-bpy-module-latest>=20230526",
+]
+description = ""
+dynamic = ["version",]
+keywords = []
+license = {file = "LICENSE.txt"}
+name = "bccelerator"
+readme = "README.md"
+requires-python = ">=3.10.0"
+
+[project.urls]
+repository = "https://github.com/polyipseity/bccelerator.git"
+
+[tool.setuptools]
+package-dir = {bccelerator = "."}
+
+[tool.setuptools.dynamic]
+version = {attr = "VERSION"}

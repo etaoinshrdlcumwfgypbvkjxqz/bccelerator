@@ -3,8 +3,6 @@
 import codecs as _codecs
 import typing as _typing
 
-from . import _codec
-
 bl_info: _typing.Mapping[str, str | tuple[int, int, int]]
 # bl_info is parsed with AST so only 'bl_info = {...}' is allowed
 # set_default is called on it so it needs to be modifiable
@@ -21,9 +19,12 @@ bl_info = {
     "support": "COMMUNITY",
     "category": "General",
 }
+VERSION = bl_info["version"]
 
 
 def register() -> None:
+    from . import _codec
+
     _codecs.register(_codec.lookup)
     from . import main
 
@@ -31,6 +32,7 @@ def register() -> None:
 
 
 def unregister() -> None:
+    from . import _codec
     from . import main
 
     main.unregister()
