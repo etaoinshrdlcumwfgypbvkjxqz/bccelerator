@@ -4,29 +4,29 @@ build-backend = "setuptools.build_meta"
 
 [project]
 authors = [
-    {name = "William So", email = "polyipseity@gmail.com"},
+	{name = "William So", email = "polyipseity@gmail.com"},
 ]
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
-		"Environment :: Plugins",
-    "Intended Audience :: Other Audience",
-    "License :: OSI Approved",
-    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
-    "Natural Language :: English",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Topic :: Artistic Software",
-		"Topic :: Multimedia :: Graphics",
-		"Topic :: Multimedia :: Graphics :: 3D Modeling",
-		"Topic :: Multimedia :: Graphics :: 3D Rendering",
-    "Topic :: Utilities",
-    "Typing :: Typed",
+	"Development Status :: 5 - Production/Stable",
+	"Environment :: Plugins",
+	"Intended Audience :: Other Audience",
+	"License :: OSI Approved",
+	"License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+	"Natural Language :: English",
+	"Operating System :: OS Independent",
+	"Programming Language :: Python",
+	"Programming Language :: Python :: 3",
+	"Programming Language :: Python :: 3.10",
+	"Topic :: Artistic Software",
+	"Topic :: Multimedia :: Graphics",
+	"Topic :: Multimedia :: Graphics :: 3D Modeling",
+	"Topic :: Multimedia :: Graphics :: 3D Rendering",
+	"Topic :: Utilities",
+	"Typing :: Typed",
 ]
 dependencies = [
-    # "bpy>=3.5.0",
-		"fake-bpy-module-latest>=20230526",
+	# "bpy>=3.5.0",
+	"fake-bpy-module-latest>=20230526",
 ]
 description = ""
 dynamic = ["version",]
