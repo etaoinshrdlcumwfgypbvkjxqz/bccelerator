@@ -6,6 +6,7 @@ import typing as _typing
 
 _T = _typing.TypeVar("_T")
 _T2 = _typing.TypeVar("_T2")
+_SENTINEL = object()
 
 
 def constant(value: _T, /) -> _typing.Callable[..., _T]:
@@ -43,3 +44,25 @@ def clear(collection: _typing.Any) -> _typing.Any | None:
             return
         collection = collection0
     raise TypeError(collection)
+
+
+def copy_attr(
+    to_obj: object, name: str, from_obj: object, default: _typing.Any = _SENTINEL
+):
+    setattr(
+        to_obj,
+        name,
+        getattr(from_obj, name)
+        if default is _SENTINEL
+        else getattr(from_obj, name, default),
+    )
+
+
+def copy_attrs(
+    to_obj: object,
+    names: _typing.Iterable[str],
+    from_obj: object,
+    default: _typing.Any = _SENTINEL,
+):
+    for name in names:
+        copy_attr(to_obj, name, from_obj, default)

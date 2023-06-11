@@ -3,6 +3,7 @@ import bpy as _bpy
 import typing as _typing
 
 from .. import patches as _patches
+from .. import util as _util
 from ..util import data as _util_data
 from ..util import enums as _util_enums
 from ..util import types as _util_types
@@ -198,13 +199,16 @@ class CleanUpLibraryWeakReference(_bpy.types.Operator):
             if asset_data:
                 new_datum.asset_mark()
                 new_asset_data = new_datum.asset_data
-                for attr in (
-                    "active_tag",
-                    "author",
-                    "catalog_id",
-                    "description",
-                ):
-                    setattr(new_asset_data, attr, getattr(asset_data, attr))
+                _util.copy_attrs(
+                    new_asset_data,
+                    (
+                        "active_tag",
+                        "author",
+                        "catalog_id",
+                        "description",
+                    ),
+                    asset_data,
+                )
                 for tag in asset_data.tags:
                     new_asset_data.tags.new(tag.name)
             datum.user_remap(new_datum)

@@ -3,58 +3,65 @@ import bpy as _bpy
 import random as _random
 import typing as _typing
 
+from .. import util as _util
 from ..util import enums as _util_enums
 from ..util import types as _util_types
 from ..util import utils as _util_utils
 
 
 def _copy_nla_strip(to_strip: _bpy.types.NlaStrip, from_strip: _bpy.types.NlaStrip):
-    for attr in (
-        "action",
-        "action_frame_end",
-        "action_frame_start",
-        # 'active',
-        "blend_in",
-        "blend_out",
-        "blend_type",
-        "extrapolation",
-        # 'fcurves',
-        "frame_end",
-        # 'frame_end_ui',
-        "frame_start",
-        # 'frame_start_ui',
-        "influence",
-        # 'modifiers',
-        "mute",
-        "name",
-        "repeat",
-        "scale",
-        # 'select',
-        "strip_time",
-        # 'strips',
-        # 'type',
-        "use_animated_influence",
-        "use_animated_time",
-        "use_animated_time_cyclic",
-        "use_auto_blend",
-        "use_reverse",
-        "use_sync_length",
-    ):
-        setattr(to_strip, attr, getattr(from_strip, attr))
+    _util.copy_attrs(
+        to_strip,
+        (
+            "action",
+            "action_frame_end",
+            "action_frame_start",
+            # 'active',
+            "blend_in",
+            "blend_out",
+            "blend_type",
+            "extrapolation",
+            # 'fcurves',
+            "frame_end",
+            # 'frame_end_ui',
+            "frame_start",
+            # 'frame_start_ui',
+            "influence",
+            # 'modifiers',
+            "mute",
+            "name",
+            "repeat",
+            "scale",
+            # 'select',
+            "strip_time",
+            # 'strips',
+            # 'type',
+            "use_animated_influence",
+            "use_animated_time",
+            "use_animated_time_cyclic",
+            "use_auto_blend",
+            "use_reverse",
+            "use_sync_length",
+        ),
+        from_strip,
+    )
 
 
 def _copy_nla_track(to_track: _bpy.types.NlaTrack, from_track: _bpy.types.NlaTrack):
-    for attr in (
-        # 'active',
-        # 'is_override_data',
-        # 'is_solo',
-        "lock",
-        "mute",
-        "name",
-        # 'select',
-        # 'strips',
-    ):
-        setattr(to_track, attr, getattr(from_track, attr))
+    _util.copy_attrs(
+        to_track,
+        (
+            # 'active',
+            # 'is_override_data',
+            # 'is_solo',
+            "lock",
+            "mute",
+            "name",
+            # 'select',
+            # 'strips',
+        ),
+        from_track,
+    )
 
 
 class CopySelectedNLATrack(_bpy.types.Operator):
