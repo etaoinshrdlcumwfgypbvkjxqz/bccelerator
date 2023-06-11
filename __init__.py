@@ -22,7 +22,7 @@ bl_info = {
 VERSION = bl_info["version"]
 
 
-def register() -> None:
+def register():
     from . import _codec
 
     _codecs.register(_codec.lookup)
@@ -31,7 +31,7 @@ def register() -> None:
     main.register()
 
 
-def unregister() -> None:
+def unregister():
     from . import _codec
     from . import main
 

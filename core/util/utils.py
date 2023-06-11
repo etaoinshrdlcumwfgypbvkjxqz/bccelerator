@@ -15,61 +15,56 @@ def configure_driver(
     data_path: str,
     var_name: str = "var",
     expr: str | None = None
-) -> None:
+):
     driver.expression = var_name if expr is None else expr
     driver.type = (
         _enums.Driver.Type.AVERAGE if expr is None else _enums.Driver.Type.SCRIPTED
     )
     driver.use_self = False if expr is None else "self" in expr
 
-    variables: Intersection[
-        _bpy.types.ChannelDriverVariables,
-        _bpy.types.bpy_prop_collection[_bpy.types.DriverVariable],
-    ] = intersection2(driver.variables)
-    clear(variables[1])
+    variables = driver.variables
+    clear(variables)
 
-    variable: _bpy.types.DriverVariable = variables[0].new()
+    variable = variables.new()
     variable.name = var_name
     variable.type = _enums.DriverVariable.Type.SINGLE_PROP
 
-    target: _bpy.types.DriverTarget = variable.targets[0]
+    target = variable.targets[0]
     target.id_type = id_type
     target.id = id
     target.data_path = data_path
 
 
-def has_driver(id: _bpy.types.ID, data_path: str) -> bool:
+def has_driver(id: _bpy.types.ID, data_path: str):
     animd: _bpy.types.AnimData | None = getattr(id, "animation_data", None)
     if animd is None:
         return False
     return any(driver.data_path == data_path for driver in animd.drivers)
 
 
-def register_class(cls: type) -> None:
-    (_bpy.utils.register_class)(cls)  # type: ignore
+def register_class(cls: type):
+    _bpy.utils.register_class(cls)
 
 
-def unregister_class(cls: type[_bpy.types.bpy_struct]) -> None:
+def unregister_class(cls: type[_bpy.types.bpy_struct]):
     # wtf: https://blender.stackexchange.com/a/124838
     if issubclass(cls, _bpy.types.Operator):
-        bl_idname_parts: _typing.MutableSequence[str] = cls.bl_idname.split(".")
+        bl_idname_parts = cls.bl_idname.split(".")
         bl_idname_parts[0] = bl_idname_parts[0].upper()
-        rna_id: str = "_OT_".join(bl_idname_parts)
+        rna_id = "_OT_".join(bl_idname_parts)
     else:
         rna_id = getattr(cls, "bl_idname")
-    (_bpy.utils.unregister_class)(  # type: ignore
+    _bpy.utils.unregister_class(  # type: ignore
         getattr(_bpy.types.bpy_struct, "bl_rna_get_subclass_py")(rna_id)
     )
 
 
-def register_classes(classes: _typing.Iterable[type[_bpy.types.bpy_struct]]) -> None:
-    cls: type[_bpy.types.bpy_struct]
+def register_classes(classes: _typing.Iterable[type[_bpy.types.bpy_struct]]):
     for cls in classes:
         register_class(cls)
 
 
-def unregister_classes(classes: _typing.Iterable[type[_bpy.types.bpy_struct]]) -> None:
-    cls: type[_bpy.types.bpy_struct]
+def unregister_classes(classes: _typing.Iterable[type[_bpy.types.bpy_struct]]):
     for cls in classes:
         unregister_class(cls)
 

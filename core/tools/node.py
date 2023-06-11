@@ -1,12 +1,9 @@
 # -*- coding: bccelerator-transform-UTF-8 -*-
-# node editor
-
 import bpy as _bpy
 import typing as _typing
 
-from .. import util as _util
+from .. import patches as _patches
 from ..util import enums as _util_enums
-from ..util import polyfill as _util_polyfill
 from ..util import types as _util_types
 from ..util import utils as _util_utils
 
@@ -15,45 +12,43 @@ class MakeLinksByName(_bpy.types.Operator):
     """Make links to selected nodes from the active node by socket name"""
 
     __slots__: _typing.ClassVar = ()
-    bl_idname: _typing.ClassVar[str] = "node.make_links_by_name"  # type: ignore
-    bl_label: _typing.ClassVar[str] = "Make Links by Name"  # type: ignore
-    bl_options: _typing.ClassVar[  # type: ignore
-        _typing.AbstractSet[_util_enums.OperatorTypeFlag]
-    ] = frozenset(
-        {_util_enums.OperatorTypeFlag.REGISTER, _util_enums.OperatorTypeFlag.UNDO}
-    )
+    bl_idname: _typing.ClassVar = "node.make_links_by_name"
+    bl_label: _typing.ClassVar = "Make Links by Name"
+    bl_options: _typing.ClassVar = {
+        _util_enums.OperatorTypeFlag.REGISTER,
+        _util_enums.OperatorTypeFlag.UNDO,
+    }
 
     @classmethod
     def poll(  # type: ignore
-        cls: type[_util_polyfill.Self], context: _bpy.types.Context
+        cls,
+        context: _bpy.types.Context,
     ) -> bool:
         return (
-            context.space_data is not None
+            context.space_data
             and context.space_data.type == _util_enums.SpaceType.NODE_EDITOR
-            and context.active_node is not None
+            and context.active_node
             and len(context.selected_nodes) >= 2
         )
 
     def execute(  # type: ignore
-        self: _util_polyfill.Self, context: _bpy.types.Context
+        self,
+        context: _bpy.types.Context,
     ) -> _typing.AbstractSet[_util_enums.OperatorReturn]:
-        processed: int = 0
-        node_tree: _bpy.types.NodeTree = _typing.cast(
+        processed = 0
+        node_tree = _typing.cast(
             _bpy.types.SpaceNodeEditor, context.space_data
         ).edit_tree
-        from_node: _bpy.types.Node = context.active_node
-        from_sockets: _util.Intersection[
-            _bpy.types.NodeOutputs,
-            _bpy.types.bpy_prop_collection[_bpy.types.NodeSocket],
-        ] = _util.intersection2(from_node.outputs)
+        from_node = context.active_node
+        from_sockets = from_node.outputs
         for (from_socket, to_socket) in (
-            (from_sockets[1][to_socket.name], to_socket)
+            (from_sockets[to_socket.name], to_socket)
             for node in context.selected_nodes
             if node != from_node
             for to_socket in node.inputs
-            if to_socket.name in from_sockets[0]
+            if _patches.contains(from_sockets, to_socket.name)
         ):
-            _util.intersection2(node_tree.links)[0].new(from_socket, to_socket)
+            node_tree.links.new(from_socket, to_socket)
             processed += 1
         self.report({_util_enums.WMReport.INFO}, f"Made {processed} link(s)")
         return (
@@ -67,48 +62,41 @@ class ConfigurePrincipledMaterialDriver(_bpy.types.Operator):
     """Configure drivers of material properties from active principled node"""
 
     __slots__: _typing.ClassVar = ()
-    bl_idname: _typing.ClassVar[  # type: ignore
-        str
-    ] = "node.configure_principled_material_driver"
-    bl_label: _typing.ClassVar[  # type: ignore
-        str
-    ] = "Configure Principled Material Driver(s)"
-    bl_options: _typing.ClassVar[  # type: ignore
-        _typing.AbstractSet[_util_enums.OperatorTypeFlag]
-    ] = frozenset(
-        {_util_enums.OperatorTypeFlag.REGISTER, _util_enums.OperatorTypeFlag.UNDO}
-    )
+    bl_idname: _typing.ClassVar = "node.configure_principled_material_driver"
+    bl_label: _typing.ClassVar = "Configure Principled Material Driver(s)"
+    bl_options: _typing.ClassVar = {
+        _util_enums.OperatorTypeFlag.REGISTER,
+        _util_enums.OperatorTypeFlag.UNDO,
+    }
 
     @classmethod
     def poll(  # type: ignore
-        cls: type[_util_polyfill.Self], context: _bpy.types.Context
+        cls,
+        context: _bpy.types.Context,
     ) -> bool:
-        return (
-            context.space_data is not None
+        return bool(
+            context.space_data
             and context.space_data.type == _util_enums.SpaceType.NODE_EDITOR
-            and context.material is not None
-            and context.active_node is not None
+            and context.material
+            and context.active_node
         )
 
     def execute(  # type: ignore
-        self: _util_polyfill.Self, context: _bpy.types.Context
+        self,
+        context: _bpy.types.Context,
     ) -> _typing.AbstractSet[_util_enums.OperatorReturn]:
-        processed: int = 0
-        material: _bpy.types.Material = context.material
-        node: _bpy.types.Node = context.active_node
-        node_tree: _bpy.types.NodeTree = _typing.cast(_bpy.types.NodeTree, node.id_data)
-        inputs: _util.Intersection[
-            _bpy.types.NodeInputs, _bpy.types.bpy_prop_collection[_bpy.types.NodeSocket]
-        ] = _util.intersection2(node.inputs)
-        if "Base Color" in inputs[0] and not _util_utils.has_driver(
+        processed = 0
+        material = context.material
+        node = context.active_node
+        node_tree = _typing.cast(_bpy.types.NodeTree, node.id_data)
+        inputs = node.inputs
+        if _patches.contains(inputs, "Base Color") and not _util_utils.has_driver(
             material, "diffuse_color"
         ):
-            curves: _typing.Sequence[_bpy.types.FCurve] = _typing.cast(
-                _typing.Sequence[_bpy.types.FCurve],
+            curves = _typing.cast(
+                _typing.Collection[_bpy.types.FCurve],
                 material.driver_add("diffuse_color"),
             )
-            index: int
-            curve: _bpy.types.FCurve
             for index, curve in enumerate(curves):
                 _util_utils.configure_driver(
                     curve.driver,
@@ -117,13 +105,15 @@ class ConfigurePrincipledMaterialDriver(_bpy.types.Operator):
                     data_path=f'nodes["{node.name}"].inputs["Base Color"].default_value[{index}]',
                 )
                 curve.lock = True
-            curves_len: int = len(curves)
+            curves_len = len(curves)
             processed += curves_len
             self.report(
                 {_util_enums.WMReport.INFO},
                 f"Configured {curves_len} material color driver(s)",
             )
-        if "Metallic" in inputs[0] and not _util_utils.has_driver(material, "metallic"):
+        if _patches.contains(inputs, "Metallic") and not _util_utils.has_driver(
+            material, "metallic"
+        ):
             curve = material.driver_add("metallic")
             _util_utils.configure_driver(
                 curve.driver,
@@ -136,7 +126,7 @@ class ConfigurePrincipledMaterialDriver(_bpy.types.Operator):
             self.report(
                 {_util_enums.WMReport.INFO}, "Configured material metallic driver"
             )
-        if "Roughness" in inputs[0] and not _util_utils.has_driver(
+        if _patches.contains(inputs, "Roughness") and not _util_utils.has_driver(
             material, "roughness"
         ):
             curve = material.driver_add("roughness")
@@ -151,7 +141,7 @@ class ConfigurePrincipledMaterialDriver(_bpy.types.Operator):
             self.report(
                 {_util_enums.WMReport.INFO}, "Configured material roughness driver"
             )
-        if "Alpha" in inputs[0]:
+        if _patches.contains(inputs, "Alpha"):
             if (
                 material.blend_method == _util_enums.Material.BlendMethod.OPAQUE
                 and not _util_utils.has_driver(material, "blend_method")
@@ -204,17 +194,16 @@ class DrawFunc(_bpy.types.Operator):
 
     @classmethod
     def NODE_MT_node_draw_func(
-        cls: type[_util_polyfill.Self], self: _typing.Any, context: _bpy.types.Context
-    ) -> None:
-        layout: _bpy.types.UILayout = self.layout
-        layout.separator()
-        layout.operator(MakeLinksByName.bl_idname)
+        cls,
+        self: _util_types.Drawer,
+        context: _bpy.types.Context,
+    ):
+        self.layout.separator()
+        self.layout.operator(MakeLinksByName.bl_idname)
         if ConfigurePrincipledMaterialDriver.poll(context):
-            layout.operator(ConfigurePrincipledMaterialDriver.bl_idname)
+            self.layout.operator(ConfigurePrincipledMaterialDriver.bl_idname)
 
 
-register: _typing.Callable[[], None]
-unregister: _typing.Callable[[], None]
 register, unregister = _util_utils.register_classes_factory(
     (
         MakeLinksByName,

@@ -1,12 +1,10 @@
 # -*- coding: bccelerator-transform-UTF-8 -*-
 import typing as _typing
 
-EnumPropertyItem3: _typing.TypeAlias = tuple[str, str, str]
-EnumPropertyItem4: _typing.TypeAlias = tuple[str, str, str, int]
-EnumPropertyItem5: _typing.TypeAlias = tuple[str, str, str, str | int, int]
-EnumPropertyItem: _typing.TypeAlias = (
-    EnumPropertyItem3 | EnumPropertyItem4 | EnumPropertyItem5
-)
+EnumPropertyItem3 = tuple[str, str, str]
+EnumPropertyItem4 = tuple[str, str, str, int]
+EnumPropertyItem5 = tuple[str, str, str, str | int, int]
+EnumPropertyItem = EnumPropertyItem3 | EnumPropertyItem4 | EnumPropertyItem5
 
 
 @_typing.overload
@@ -37,7 +35,7 @@ def enum_property_item(
     *,
     icon: str | int | None = None,
     number: int | None = None
-) -> EnumPropertyItem:
+):
     if icon is None:
         if number is None:
             return (identifier, name, description)

@@ -9,37 +9,35 @@ from . import enums as _enums
 _T = _typing.TypeVar("_T")
 
 
+@_typing.final
+class Drawer(_typing.Protocol):
+    @property
+    def layout(self) -> _bpy.types.UILayout:
+        ...
+
+
 def draw_func_class(cls: type[_T]) -> type[_T]:
-    register_0: _typing.Callable[[type[_T]], None] = getattr(
-        cls, "register", classmethod(void)
-    ).__func__
-    unregister_0: _typing.Callable[[type[_T]], None] = getattr(
-        cls, "unregister", classmethod(void)
-    ).__func__
+    register_0 = getattr(cls, "register", classmethod(VOID)).__func__
+    unregister_0 = getattr(cls, "unregister", classmethod(VOID)).__func__
 
     registry: _typing.MutableMapping[
-        str, _typing.Callable[[_typing.Any, _bpy.types.Context], None]
+        str, _typing.Callable[[Drawer, _bpy.types.Context], None]
     ] = {}
 
     @classmethod
     @_functools.wraps(register_0)
-    def register(cls: type[_T]) -> None:
+    def register(cls: type[_T]):
         register_0(cls)
-        func_name: str
         for func_name in dir(cls):
             if "_draw_func" in func_name and func_name not in registry:
-                func: _typing.Callable[
-                    [_typing.Any, _bpy.types.Context], None
-                ] = getattr(cls, func_name)
+                func = getattr(cls, func_name)
 
                 @_functools.wraps(func)
                 def wrapper(
-                    self: _typing.Any,
+                    self: Drawer,
                     context: _bpy.types.Context,
                     *,
-                    __func: _typing.Callable[
-                        [_typing.Any, _bpy.types.Context], None
-                    ] = func,
+                    __func: _typing.Callable[[Drawer, _bpy.types.Context], None] = func,
                 ) -> None:
                     __func(self, context)
 
@@ -48,9 +46,7 @@ def draw_func_class(cls: type[_T]) -> type[_T]:
 
     @classmethod
     @_functools.wraps(unregister_0)
-    def unregister(cls: type[_T]) -> None:
-        func_name: str
-        func: _typing.Callable[[_typing.Any, _bpy.types.Context], None]
+    def unregister(cls: type[_T]):
         for func_name, func in registry.items():
             getattr(_bpy.types, func_name[: -len("_draw_func")]).remove(func)
         registry.clear()
@@ -61,7 +57,7 @@ def draw_func_class(cls: type[_T]) -> type[_T]:
     return cls
 
 
-def internal_operator(*, uuid: str) -> _typing.Callable[[type[_T]], type[_T]]:
+def internal_operator(*, uuid: str):
     def decorator(cls: type[_T]) -> type[_T]:
         setattr(cls, "bl_idname", f'internal.{uuid.replace("-", "_")}')
         setattr(cls, "bl_label", "")

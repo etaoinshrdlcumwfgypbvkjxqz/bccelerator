@@ -1,9 +1,5 @@
 # -*- coding: bccelerator-transform-UTF-8 -*-
-import types as _types
-import typing as _typing
-
-
-def items() -> _typing.Iterator[_types.ModuleType]:
+def items():
     from . import animation
 
     yield animation

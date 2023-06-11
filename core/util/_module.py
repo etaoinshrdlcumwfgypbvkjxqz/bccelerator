@@ -9,18 +9,18 @@ _T2 = _typing.TypeVar("_T2")
 
 
 def constant(value: _T, /) -> _typing.Callable[..., _T]:
-    def ret(*_: _typing.Any) -> _T:
+    def ret(*_: _typing.Any):
         return value
 
     return ret
 
 
-void: _typing.Callable[..., None] = constant(None)
+VOID = constant(None)
 
 
 def ignore_args(func: _typing.Callable[[], _T]) -> _typing.Callable[..., _T]:
     @_functools.wraps(func)
-    def func0(*_: _typing.Any) -> _T:
+    def func0(*_: _typing.Any):
         return func()
 
     return func0
@@ -38,16 +38,8 @@ def clear(collection: _typing.Any) -> _typing.Any | None:
     if isinstance(collection, _bpy.types.bpy_prop_collection):
         collection0: _bpy.types.bpy_prop_collection[_typing.Any] = collection
         if callable(getattr(collection0, "remove", None)):
-            item: _typing.Any
-            for item in collection0.values():  # type: ignore
+            for item in collection0:
                 getattr(collection0, "remove")(item)
             return
         collection = collection0
     raise TypeError(collection)
-
-
-Intersection = tuple
-
-
-def intersection2(value: _T | _T2) -> Intersection[_T, _T2]:
-    return (_typing.cast(_T, value), _typing.cast(_T2, value))
