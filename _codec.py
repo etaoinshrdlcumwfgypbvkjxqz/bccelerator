@@ -14,7 +14,12 @@ from token import (
     RSQB as _RSQB,
 )
 from tokenize import generate_tokens as _gen_tokens, untokenize as _untokenize
-from typing import ClassVar as _ClassVar, Iterator as _Itor, Sequence as _Seq
+from typing import (
+    ClassVar as _ClassVar,
+    Iterator as _Itor,
+    Literal as _Literal,
+    Sequence as _Seq,
+)
 
 
 class BcceleratorTransform(_Codec):
@@ -38,18 +43,29 @@ class BcceleratorTransform(_Codec):
 
         def gen_tokens() -> _Itor[tuple[int, str]]:
             inserts = _chain(iter(serialized), _repeat(""))
+            state: _Literal["", "match", "alias"] = ""
+            aliases = {
+                _bpy_collection.__name__,
+            }
             for token in _gen_tokens(iter(input.splitlines(keepends=True)).__next__):
+                if state == "match":
+                    if token.exact_type == _NAME and token.string == "as":
+                        state = "alias"
+                    else:
+                        state = ""
+                        yield from map(
+                            lambda token: token[:2],
+                            _gen_tokens(
+                                iter(next(inserts).splitlines(keepends=True)).__next__
+                            ),
+                        )
+                elif state == "alias":
+                    state = ""
+                    aliases.add(token.string)
+                else:
+                    if token.exact_type == _NAME and token.string in aliases:
+                        state = "match"
                 yield token[:2]
-                if (
-                    token.exact_type == _NAME
-                    and token.string == _bpy_collection.__name__
-                ):
-                    yield from map(
-                        lambda token: token[:2],
-                        _gen_tokens(
-                            iter(next(inserts).splitlines(keepends=True)).__next__
-                        ),
-                    )
 
         return self.__codec.encode(_untokenize(gen_tokens()), errors=errors)
 
@@ -57,10 +73,31 @@ class BcceleratorTransform(_Codec):
         inter, consumed = self.__codec.decode(input, errors=errors)
 
         def gen_tokens():
-            level = None
+            state: _Literal["", "alias"] | int = ""
             deleted = list[_StringIO]()
+            aliases = {
+                _bpy_collection.__name__,
+            }
             for token in _gen_tokens(iter(inter.splitlines(keepends=True)).__next__):
-                if level is None:
+                if isinstance(state, int):
+                    if token.exact_type == _NAME and token.string == "as":
+                        state = "alias"
+                        deleted.pop()
+                        yield token[:2]
+                    elif token.exact_type == _LSQB:
+                        state += 1
+                        deleted[-1].write(token.string)
+                    elif token.exact_type == _RSQB:
+                        state -= 1
+                        deleted[-1].write(token.string)
+                        if state == 0:
+                            state = ""
+                    elif state == 0:
+                        state = ""
+                        yield token[:2]
+                    else:
+                        deleted[-1].write(token.string)
+                else:
                     if token.exact_type == _ENDMARKER:
                         yield (_NEWLINE, "\n")
                         seralized: BcceleratorTransform.__SeralizedType = tuple(
@@ -71,26 +108,12 @@ class BcceleratorTransform(_Codec):
                             self.__format.format(_dumps(seralized, ensure_ascii=True)),
                         )
                     yield token[:2]
-                    if (
-                        token.exact_type == _NAME
-                        and token.string == _bpy_collection.__name__
-                    ):
-                        level = 0
+                    if token.exact_type == _NAME and token.string in aliases:
+                        state = 0
                         deleted.append(_StringIO())
-                else:
-                    if token.exact_type == _LSQB:
-                        level += 1
-                        deleted[-1].write(token.string)
-                    elif token.exact_type == _RSQB:
-                        level -= 1
-                        deleted[-1].write(token.string)
-                        if level == 0:
-                            level = None
-                    elif level == 0:
-                        level = None
-                        yield token[:2]
-                    else:
-                        deleted[-1].write(token.string)
+                    if state == "alias":
+                        state = ""
+                        aliases.add(token.string)
 
         return _untokenize(gen_tokens()), consumed
 
