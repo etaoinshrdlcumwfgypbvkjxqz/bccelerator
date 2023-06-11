@@ -74,7 +74,7 @@ def register_classes_factory(
 ) -> tuple[_typing.Callable[[], None], _typing.Callable[[], None]]:
     return (
         _functools.partial(register_classes, classes),
-        _functools.partial(unregister_classes, reversed(classes)),
+        _functools.partial(unregister_classes, tuple(reversed(classes))),
     )
 
 
