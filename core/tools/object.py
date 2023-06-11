@@ -4,20 +4,7 @@ from bmesh import (
     update_edit_mesh as _upd_e_mesh,
 )
 from bmesh.types import BMFace as _BMFace
-from bpy.ops.mesh import (
-    delete as _mesh_delete,  # type: ignore
-    remove_doubles as _remove_doubles,  # type: ignore
-    select_all as _mesh_select_all,  # type: ignore
-)
-from bpy.ops.object import (
-    convert as _convert,  # type: ignore
-    duplicates_make_real as _duplicates_make_real,  # type: ignore
-    editmode_toggle as _editmode_toggle,  # type: ignore
-    join as _join,  # type: ignore
-    make_local as _make_local,  # type: ignore
-    make_single_user as _make_single_user,  # type: ignore
-    select_all as _obj_select_all,  # type: ignore
-)
+from bpy.ops import mesh as _mesh, object as _object
 from bpy.props import (
     EnumProperty as _EnumProp,  # type: ignore
 )
@@ -65,6 +52,16 @@ from ..utils.utils import (
     register_classes_factory as _reg_cls_fac,
 )
 
+_MESH_DELETE = _mesh.delete  # type: ignore
+_MESH_REMOVE_DOUBLES = _mesh.remove_doubles  # type: ignore
+_MESH_SELECT_ALL = _mesh.select_all  # type: ignore
+_OBJECT_CONVERT = _object.convert  # type: ignore
+_OBJECT_DUPLICATES_MAKE_REAL = _object.duplicates_make_real  # type: ignore
+_OBJECT_EDITMODE_TOGGLE = _object.editmode_toggle  # type: ignore
+_OBJECT_JOIN = _object.join  # type: ignore
+_OBJECT_MAKE_LOCAL = _object.make_local  # type: ignore
+_OBJECT_MAKE_SINGLE_USER = _object.make_single_user  # type: ignore
+_OBJECT_SELECT_ALL = _object.select_all  # type: ignore
 _SELECT_FACE_DOUBLES_TOLERANCE = 0.0001
 _SELECT_FACE_DOUBLES_ROUNDING = round(-_log10(_SELECT_FACE_DOUBLES_TOLERANCE) + 1)
 
@@ -231,29 +228,29 @@ class MergeWallCollection(_Op):
         instance.instance_type = _EObj.InstanceType.COLLECTION
         instance.instance_collection = collection
         scene.collection.objects.link(instance)
-        _obj_select_all(action="DESELECT")
+        _OBJECT_SELECT_ALL(action="DESELECT")
         instance.select_set(True)
-        _duplicates_make_real()
+        _OBJECT_DUPLICATES_MAKE_REAL()
         data.objects.remove(instance)
 
-        _make_local(type="SELECT_OBDATA")
-        _make_single_user(type="SELECTED_OBJECTS", object=True, obdata=True)
+        _OBJECT_MAKE_LOCAL(type="SELECT_OBDATA")
+        _OBJECT_MAKE_SINGLE_USER(type="SELECTED_OBJECTS", object=True, obdata=True)
 
         mesh = data.meshes.new(collection.name)
         mesh_obj = data.objects.new(collection.name, object_data=mesh)
         scene.collection.objects.link(mesh_obj)
         mesh_obj.select_set(True)
         context.view_layer.objects.active = mesh_obj
-        _convert(target="MESH")
-        _join()
+        _OBJECT_CONVERT(target="MESH")
+        _OBJECT_JOIN()
 
-        _editmode_toggle()
-        _mesh_select_all(action="DESELECT")
+        _OBJECT_EDITMODE_TOGGLE()
+        _MESH_SELECT_ALL(action="DESELECT")
         _select_face_doubles(mesh)
-        _mesh_delete(type="FACE")
-        _mesh_select_all(action="SELECT")
-        _remove_doubles()
-        _editmode_toggle()
+        _MESH_DELETE(type="FACE")
+        _MESH_SELECT_ALL(action="SELECT")
+        _MESH_REMOVE_DOUBLES()
+        _OBJECT_EDITMODE_TOGGLE()
 
         return {_OpReturn.FINISHED}
 

@@ -1,9 +1,5 @@
 # -*- coding: bccelerator-transform-UTF-8 -*-
-from bpy.ops.nla import (
-    select_all as _nla_select_all,  # type: ignore
-    soundclip_add as _soundclip_add,  # type: ignore
-    transition_add as _transition_add,  # type: ignore
-)
+from bpy.ops import nla as _nla
 from bpy.types import (
     Context as _Ctx,
     ID as _ID,
@@ -31,6 +27,10 @@ from ..utils.utils import (
     ensure_animation_data as _ensure_anim_d,
     register_classes_factory as _reg_cls_fac,
 )
+
+_NLA_SELECT_ALL = _nla.select_all  # type: ignore
+_NLA_SOUNDCLIP_ADD = _nla.soundclip_add  # type: ignore
+_NLA_TRANSITION_ADD = _nla.transition_add  # type: ignore
 
 
 def _copy_nla_strip(to_strip: _NlaStrip, from_strip: _NlaStrip):
@@ -139,7 +139,7 @@ class CopySelectedNLATrack(_Op):
                             )
                         elif strip.type == _ENLAStrip.Type.SOUND:
                             context.scene.frame_current = int(strip.frame_start)
-                            _soundclip_add()
+                            _NLA_SOUNDCLIP_ADD()
                             new_strip = to_track.strips[-1]
                             _copy_nla_strip(new_strip, strip)
                         else:
@@ -150,9 +150,9 @@ class CopySelectedNLATrack(_Op):
                     for transition in transitions:
                         trans_from = to_track.strips[transition - 1]
                         trans_to = to_track.strips[transition]
-                        _nla_select_all(action="DESELECT")
+                        _NLA_SELECT_ALL(action="DESELECT")
                         trans_from.select = trans_to.select = True
-                        _transition_add()
+                        _NLA_TRANSITION_ADD()
                         trans_from.select = trans_to.select = False
                 finally:
                     to_track.lock = lock
