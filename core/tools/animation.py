@@ -1,16 +1,40 @@
 # -*- coding: bccelerator-transform-UTF-8 -*-
-import bpy as _bpy
-import random as _random
-import typing as _typing
+from bpy.ops.nla import (
+    select_all as _nla_select_all,  # type: ignore
+    soundclip_add as _soundclip_add,  # type: ignore
+    transition_add as _transition_add,  # type: ignore
+)
+from bpy.types import (
+    Context as _Ctx,
+    ID as _ID,
+    NlaStrip as _NlaStrip,
+    NlaTrack as _NlaTrack,
+    Object as _Obj,
+    Operator as _Op,
+)
+from random import randint as _randint
+from typing import AbstractSet as _Set, ClassVar as _ClassVar, cast as _cast
 
-from .. import util as _util
-from ..util import enums as _util_enums
-from ..util import types as _util_types
-from ..util import utils as _util_utils
+from ..util import copy_attrs as _copy_attrs
+from ..util.enums import (
+    NLAStrip as _ENLAStrip,
+    OperatorReturn as _OpReturn,
+    OperatorTypeFlag as _OpTypeFlag,
+    WMReport as _WMReport,
+)
+from ..util.types import (
+    Drawer as _Drawer,
+    draw_func_class as _draw_func_class,
+    internal_operator as _int_op,
+)
+from ..util.utils import (
+    ensure_animation_data as _ensure_anim_d,
+    register_classes_factory as _reg_cls_fac,
+)
 
 
-def _copy_nla_strip(to_strip: _bpy.types.NlaStrip, from_strip: _bpy.types.NlaStrip):
-    _util.copy_attrs(
+def _copy_nla_strip(to_strip: _NlaStrip, from_strip: _NlaStrip):
+    _copy_attrs(
         to_strip,
         (
             "action",
@@ -47,8 +71,8 @@ def _copy_nla_strip(to_strip: _bpy.types.NlaStrip, from_strip: _bpy.types.NlaStr
     )
 
 
-def _copy_nla_track(to_track: _bpy.types.NlaTrack, from_track: _bpy.types.NlaTrack):
-    _util.copy_attrs(
+def _copy_nla_track(to_track: _NlaTrack, from_track: _NlaTrack):
+    _copy_attrs(
         to_track,
         (
             # 'active',
@@ -64,37 +88,37 @@ def _copy_nla_track(to_track: _bpy.types.NlaTrack, from_track: _bpy.types.NlaTra
     )
 
 
-class CopySelectedNLATrack(_bpy.types.Operator):
+class CopySelectedNLATrack(_Op):
     """Copy selected NLA track(s) to selected object(s)"""
 
-    __slots__: _typing.ClassVar = ()
-    bl_idname: _typing.ClassVar = "nla.copy_selected_track"
-    bl_label: _typing.ClassVar = "Copy Selected NLA Track(s)"
-    bl_options: _typing.ClassVar = {
-        _util_enums.OperatorTypeFlag.REGISTER,
-        _util_enums.OperatorTypeFlag.UNDO,
+    __slots__: _ClassVar = ()
+    bl_idname: _ClassVar = "nla.copy_selected_track"
+    bl_label: _ClassVar = "Copy Selected NLA Track(s)"
+    bl_options: _ClassVar = {
+        _OpTypeFlag.REGISTER,
+        _OpTypeFlag.UNDO,
     }
 
     @classmethod
     def poll(  # type: ignore
         cls,
-        context: _bpy.types.Context,
+        context: _Ctx,
     ) -> bool:
         nla_track = context.active_nla_track
         return nla_track and any(
-            obj is not _typing.cast(_bpy.types.Object, nla_track.id_data)
+            obj is not _cast(_Obj, nla_track.id_data)
             for obj in context.selected_objects
         )
 
     def execute(  # type: ignore
         self,
-        context: _bpy.types.Context,
-    ) -> _typing.AbstractSet[_util_enums.OperatorReturn]:
+        context: _Ctx,
+    ) -> _Set[_OpReturn]:
         processed = 0
         from_track = context.active_nla_track
         for obj in context.selected_objects:
-            if obj is not _typing.cast(_bpy.types.Object, from_track.id_data):
-                to_track = _util_utils.ensure_animation_data(obj).nla_tracks.new()
+            if obj is not _cast(_Obj, from_track.id_data):
+                to_track = _ensure_anim_d(obj).nla_tracks.new()
                 _copy_nla_track(to_track, from_track)
 
                 current_frame = context.scene.frame_current
@@ -102,86 +126,78 @@ class CopySelectedNLATrack(_bpy.types.Operator):
                 try:
                     to_track.lock = False
 
-                    transitions: _typing.MutableSequence[int] = []
+                    transitions = list[int]()
                     for index, strip in enumerate(from_track.strips):
-                        if strip.type == _util_enums.NLAStrip.Type.TRANSITION:
+                        if strip.type == _ENLAStrip.Type.TRANSITION:
                             transitions.append(index)
-                        elif strip.type == _util_enums.NLAStrip.Type.CLIP:
+                        elif strip.type == _ENLAStrip.Type.CLIP:
                             _copy_nla_strip(
                                 to_track.strips.new(
                                     strip.name, int(strip.frame_start), strip.action
                                 ),
                                 strip,
                             )
-                        elif strip.type == _util_enums.NLAStrip.Type.SOUND:
+                        elif strip.type == _ENLAStrip.Type.SOUND:
                             context.scene.frame_current = int(strip.frame_start)
-                            _bpy.ops.nla.soundclip_add()  # type: ignore
+                            _soundclip_add()
                             new_strip = to_track.strips[-1]
                             _copy_nla_strip(new_strip, strip)
                         else:
                             self.report(
-                                {_util_enums.WMReport.WARNING},
+                                {_WMReport.WARNING},
                                 f'Unsupported NLA strip "{strip.name}"',
                             )
                     for transition in transitions:
                         trans_from = to_track.strips[transition - 1]
                         trans_to = to_track.strips[transition]
-                        _bpy.ops.nla.select_all(action="DESELECT")  # type: ignore
+                        _nla_select_all(action="DESELECT")
                         trans_from.select = trans_to.select = True
-                        _bpy.ops.nla.transition_add()  # type: ignore
+                        _transition_add()
                         trans_from.select = trans_to.select = False
                 finally:
                     to_track.lock = lock
                     context.scene.frame_current = current_frame
 
                 processed += 1
-                self.report(
-                    {_util_enums.WMReport.INFO}, f'Copied to object "{obj.name_full}"'
-                )
-        self.report({_util_enums.WMReport.INFO}, f"Copied to {processed} object(s)")
-        return (
-            {_util_enums.OperatorReturn.FINISHED}
-            if processed > 0
-            else {_util_enums.OperatorReturn.CANCELLED}
-        )
+                self.report({_WMReport.INFO}, f'Copied to object "{obj.name_full}"')
+        self.report({_WMReport.INFO}, f"Copied to {processed} object(s)")
+        return {_OpReturn.FINISHED} if processed > 0 else {_OpReturn.CANCELLED}
 
 
-class RandomizeSelectedNLAStrip(_bpy.types.Operator):
+class RandomizeSelectedNLAStrip(_Op):
     """Randomize time of selected NLA strip(s), preserving order"""
 
-    __slots__: _typing.ClassVar = ()
-    bl_idname: _typing.ClassVar = "nla.randomize_selected_strip"
-    bl_label: _typing.ClassVar = "Randomize Selected NLA Strip(s)"
-    bl_options: _typing.ClassVar = {
-        _util_enums.OperatorTypeFlag.REGISTER,
-        _util_enums.OperatorTypeFlag.UNDO,
+    __slots__: _ClassVar = ()
+    bl_idname: _ClassVar = "nla.randomize_selected_strip"
+    bl_label: _ClassVar = "Randomize Selected NLA Strip(s)"
+    bl_options: _ClassVar = {
+        _OpTypeFlag.REGISTER,
+        _OpTypeFlag.UNDO,
     }
 
     @classmethod
     def poll(  # type: ignore
         cls,
-        context: _bpy.types.Context,
+        context: _Ctx,
     ) -> bool:
         return bool(context.selected_nla_strips)
 
     def execute(  # type: ignore
         self,
-        context: _bpy.types.Context,
-    ) -> _typing.AbstractSet[_util_enums.OperatorReturn]:
+        context: _Ctx,
+    ) -> _Set[_OpReturn]:
         processed = 0
         for nla_strip in context.selected_nla_strips:
             nla_tracks = (
                 track
-                for track in _util_utils.ensure_animation_data(
-                    _typing.cast(_bpy.types.ID, nla_strip.id_data)
-                ).nla_tracks
+                for track in _ensure_anim_d(_cast(_ID, nla_strip.id_data)).nla_tracks
                 if nla_strip in track.strips.values()  # type: ignore
             )
             try:
                 nla_track = next(nla_tracks)
             except StopIteration:
                 self.report(
-                    {_util_enums.WMReport.WARNING},
+                    {_WMReport.WARNING},
                     f'Cannot find NLA track for strip "{nla_strip.name}"',
                 )
                 continue
@@ -189,14 +205,14 @@ class RandomizeSelectedNLAStrip(_bpy.types.Operator):
                 del nla_tracks
             if nla_track.lock:
                 self.report(
-                    {_util_enums.WMReport.WARNING},
+                    {_WMReport.WARNING},
                     f'NLA track "{nla_track.name}" for strip "{nla_strip.name}" is locked',
                 )
                 continue
             index = nla_track.strips.find(nla_strip.name)
             if index == -1:
                 self.report(
-                    {_util_enums.WMReport.WARNING},
+                    {_WMReport.WARNING},
                     f'Cannot find NLA strip "{nla_strip.name}" in track "{nla_track.name}"',
                 )
                 continue
@@ -217,40 +233,34 @@ class RandomizeSelectedNLAStrip(_bpy.types.Operator):
             )
             if start_min > start_max:
                 self.report(
-                    {_util_enums.WMReport.WARNING},
+                    {_WMReport.WARNING},
                     f'Cannot randomize NLA strip "{nla_track.name}" [{start_min}, {start_max}]',
                 )
                 continue
-            nla_strip.frame_start_ui = _random.randint(start_min, start_max)
-            self.report(
-                {_util_enums.WMReport.INFO}, f'Randomized NLA strip "{nla_strip.name}"'
-            )
+            nla_strip.frame_start_ui = _randint(start_min, start_max)
+            self.report({_WMReport.INFO}, f'Randomized NLA strip "{nla_strip.name}"')
             processed += 1
-        self.report({_util_enums.WMReport.INFO}, f"Randomized {processed} NLA strip(s)")
-        return (
-            {_util_enums.OperatorReturn.FINISHED}
-            if processed > 0
-            else {_util_enums.OperatorReturn.CANCELLED}
-        )
+        self.report({_WMReport.INFO}, f"Randomized {processed} NLA strip(s)")
+        return {_OpReturn.FINISHED} if processed > 0 else {_OpReturn.CANCELLED}
 
 
-@_util_types.draw_func_class
-@_util_types.internal_operator(uuid="f11f0af4-bbec-44d0-9ceb-4386f07ef2c6")
-class DrawFunc(_bpy.types.Operator):
-    __slots__: _typing.ClassVar = ()
+@_draw_func_class
+@_int_op(uuid="f11f0af4-bbec-44d0-9ceb-4386f07ef2c6")
+class DrawFunc(_Op):
+    __slots__: _ClassVar = ()
 
     @classmethod
     def NLA_MT_edit_draw_func(
         cls,
-        self: _util_types.Drawer,
-        context: _bpy.types.Context,
+        self: _Drawer,
+        context: _Ctx,
     ):
         self.layout.separator()
         self.layout.operator(CopySelectedNLATrack.bl_idname)
         self.layout.operator(RandomizeSelectedNLAStrip.bl_idname)
 
 
-register, unregister = _util_utils.register_classes_factory(
+register, unregister = _reg_cls_fac(
     (
         CopySelectedNLATrack,
         RandomizeSelectedNLAStrip,

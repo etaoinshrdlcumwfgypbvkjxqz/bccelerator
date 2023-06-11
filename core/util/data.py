@@ -1,12 +1,21 @@
 # -*- coding: bccelerator-transform-UTF-8 -*-
-import bpy as _bpy
-import dataclasses as _dataclasses
-import re as _re
-import typing as _typing
+from bpy import types as _types
+from bpy.types import (
+    Context as _Ctx,
+    Curves as _Curves,
+    FreestyleLineStyle as _FreestyleLineStyle,
+    ID as _ID,
+    Key as _Key,
+    VectorFont as _VecFont,
+    bpy_prop_collection as _bpy_collect,
+)
+from dataclasses import dataclass as _dataclass
+from re import Pattern as _Pattern, compile as _compile
+from typing import ClassVar as _ClassVar, Mapping as _Map, final as _final
 
 
-@_typing.final
-@_dataclasses.dataclass(
+@_final
+@_dataclass(
     init=True,
     repr=True,
     eq=True,
@@ -18,7 +27,7 @@ import typing as _typing
     slots=True,
 )
 class _RegexTransform:
-    pattern: _re.Pattern[str]
+    pattern: _Pattern[str]
     replacement: str
 
     def apply(self, string: str):
@@ -26,21 +35,21 @@ class _RegexTransform:
 
 
 _plural_transforms = (
-    _RegexTransform(pattern=_re.compile(r"s$", flags=0), replacement=""),
-    _RegexTransform(pattern=_re.compile(r"es$", flags=0), replacement=""),
-    _RegexTransform(pattern=_re.compile(r"ies$", flags=0), replacement="y"),
-    _RegexTransform(pattern=_re.compile(r"^\b$", flags=0), replacement=""),
+    _RegexTransform(pattern=_compile(r"s$", flags=0), replacement=""),
+    _RegexTransform(pattern=_compile(r"es$", flags=0), replacement=""),
+    _RegexTransform(pattern=_compile(r"ies$", flags=0), replacement="y"),
+    _RegexTransform(pattern=_compile(r"^\b$", flags=0), replacement=""),
 )
-_caseless_types = {attr.casefold(): attr for attr in dir(_bpy.types)}
+_caseless_types = {attr.casefold(): attr for attr in dir(_types)}
 _type_from_data_name_exceptions = {
-    "fonts": _bpy.types.VectorFont,
-    "linestyles": _bpy.types.FreestyleLineStyle,
-    "hair_curves": _bpy.types.Curves,
-    "shape_keys": _bpy.types.Key,
+    "fonts": _VecFont,
+    "linestyles": _FreestyleLineStyle,
+    "hair_curves": _Curves,
+    "shape_keys": _Key,
 }
 
 
-def _type_from_data_name(key: str) -> type[_bpy.types.ID]:
+def _type_from_data_name(key: str) -> type[_ID]:
     try:
         return _type_from_data_name_exceptions[key]
     except KeyError:
@@ -49,7 +58,7 @@ def _type_from_data_name(key: str) -> type[_bpy.types.ID]:
     names = tuple(tf.apply(tfed_key) for tf in _plural_transforms)
     try:
         return next(
-            getattr(_bpy.types, _caseless_types[name])
+            getattr(_types, _caseless_types[name])
             for name in names
             if name in _caseless_types
         )
@@ -57,13 +66,11 @@ def _type_from_data_name(key: str) -> type[_bpy.types.ID]:
         raise LookupError(key, tfed_key, names) from ex
 
 
-@_typing.final
-class _BlendDataAll(
-    dict[type[_bpy.types.ID], _bpy.types.bpy_prop_collection[_bpy.types.ID]]
-):
-    __slots__: _typing.ClassVar = ()
+@_final
+class _BlendDataAll(dict[type[_ID], _bpy_collect[_ID]]):
+    __slots__: _ClassVar = ()
 
-    def __missing__(self, key: type[_bpy.types.ID]):
+    def __missing__(self, key: type[_ID]):
         for exist_key, value in self.items():
             if issubclass(key, exist_key):
                 self[key] = value
@@ -72,16 +79,12 @@ class _BlendDataAll(
 
 
 def all(
-    context: _bpy.types.Context,
-) -> _typing.Mapping[
-    type[_bpy.types.ID], _bpy.types.bpy_prop_collection[_bpy.types.ID]
-]:
+    context: _Ctx,
+) -> _Map[type[_ID], _bpy_collect[_ID]]:
     return _BlendDataAll(
         {
             _type_from_data_name(attr): getattr(context.blend_data, attr)
             for attr in dir(context.blend_data)
-            if isinstance(
-                getattr(context.blend_data, attr), _bpy.types.bpy_prop_collection
-            )
+            if isinstance(getattr(context.blend_data, attr), _bpy_collect)
         }
     )

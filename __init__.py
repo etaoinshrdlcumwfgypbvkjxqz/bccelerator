@@ -1,9 +1,9 @@
 # -*- coding: UTF-8 -*-
 # SPDX-License-Identifier: AGPL-3.0-or-later
-import codecs as _codecs
-import typing as _typing
+from codecs import register as _cdx_reg, unregister as _cdx_unreg
+from typing import Mapping as _Map
 
-bl_info: _typing.Mapping[str, str | tuple[int, int, int]]
+bl_info: _Map[str, str | tuple[int, int, int]]
 # bl_info is parsed with AST so only 'bl_info = {...}' is allowed
 # set_default is called on it so it needs to be modifiable
 bl_info = {
@@ -23,17 +23,18 @@ VERSION = bl_info["version"]
 
 
 def register():
-    from . import _codec
+    from ._codec import lookup
 
-    _codecs.register(_codec.lookup)
-    from . import main
+    _cdx_reg(lookup)
+    from .main import register
 
-    main.register()
+    register()
 
 
 def unregister():
-    from . import _codec
-    from . import main
+    from .main import unregister
 
-    main.unregister()
-    _codecs.unregister(_codec.lookup)
+    unregister()
+    from ._codec import lookup
+
+    _cdx_unreg(lookup)

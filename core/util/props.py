@@ -1,5 +1,5 @@
 # -*- coding: bccelerator-transform-UTF-8 -*-
-import typing as _typing
+from typing import overload as _overload
 
 EnumPropertyItem3 = tuple[str, str, str]
 EnumPropertyItem4 = tuple[str, str, str, int]
@@ -7,21 +7,21 @@ EnumPropertyItem5 = tuple[str, str, str, str | int, int]
 EnumPropertyItem = EnumPropertyItem3 | EnumPropertyItem4 | EnumPropertyItem5
 
 
-@_typing.overload
+@_overload
 def enum_property_item(
     identifier: str, name: str, description: str
 ) -> EnumPropertyItem3:
     ...
 
 
-@_typing.overload
+@_overload
 def enum_property_item(
     identifier: str, name: str, description: str, *, number: int
 ) -> EnumPropertyItem4:
     ...
 
 
-@_typing.overload
+@_overload
 def enum_property_item(
     identifier: str, name: str, description: str, *, icon: str | int, number: int
 ) -> EnumPropertyItem5:

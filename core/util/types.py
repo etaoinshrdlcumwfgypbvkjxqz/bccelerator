@@ -1,54 +1,58 @@
 # -*- coding: bccelerator-transform-UTF-8 -*-
-import bpy as _bpy
-import functools as _functools
-import typing as _typing
+from bpy import types as _types
+from bpy.types import Context as _Ctx, UILayout as _UILayout
+from functools import wraps as _wraps
+from typing import (
+    Callable as _Callable,
+    Protocol as _Protocol,
+    TypeVar as _TypeVar,
+    final as _final,
+)
 
-from . import *
-from . import enums as _enums
+from . import VOID as _VOID
+from .enums import OperatorTypeFlag as _OpTypeFlag
 
-_T = _typing.TypeVar("_T")
+_T = _TypeVar("_T")
 
 
-@_typing.final
-class Drawer(_typing.Protocol):
+@_final
+class Drawer(_Protocol):
     @property
-    def layout(self) -> _bpy.types.UILayout:
+    def layout(self) -> _UILayout:
         ...
 
 
 def draw_func_class(cls: type[_T]) -> type[_T]:
-    register_0 = getattr(cls, "register", classmethod(VOID)).__func__
-    unregister_0 = getattr(cls, "unregister", classmethod(VOID)).__func__
+    register_0 = getattr(cls, "register", classmethod(_VOID)).__func__
+    unregister_0 = getattr(cls, "unregister", classmethod(_VOID)).__func__
 
-    registry: _typing.MutableMapping[
-        str, _typing.Callable[[Drawer, _bpy.types.Context], None]
-    ] = {}
+    registry = dict[str, _Callable[[Drawer, _Ctx], None]]()
 
     @classmethod
-    @_functools.wraps(register_0)
+    @_wraps(register_0)
     def register(cls: type[_T]):
         register_0(cls)
         for func_name in dir(cls):
             if "_draw_func" in func_name and func_name not in registry:
                 func = getattr(cls, func_name)
 
-                @_functools.wraps(func)
+                @_wraps(func)
                 def wrapper(
                     self: Drawer,
-                    context: _bpy.types.Context,
+                    context: _Ctx,
                     *,
-                    __func: _typing.Callable[[Drawer, _bpy.types.Context], None] = func,
+                    __func: _Callable[[Drawer, _Ctx], None] = func,
                 ) -> None:
                     __func(self, context)
 
                 registry[func_name] = wrapper
-                getattr(_bpy.types, func_name[: -len("_draw_func")]).append(wrapper)
+                getattr(_types, func_name[: -len("_draw_func")]).append(wrapper)
 
     @classmethod
-    @_functools.wraps(unregister_0)
+    @_wraps(unregister_0)
     def unregister(cls: type[_T]):
         for func_name, func in registry.items():
-            getattr(_bpy.types, func_name[: -len("_draw_func")]).remove(func)
+            getattr(_types, func_name[: -len("_draw_func")]).remove(func)
         registry.clear()
         unregister_0(cls)
 
@@ -61,10 +65,10 @@ def internal_operator(*, uuid: str):
     def decorator(cls: type[_T]) -> type[_T]:
         setattr(cls, "bl_idname", f'internal.{uuid.replace("-", "_")}')
         setattr(cls, "bl_label", "")
-        setattr(cls, "bl_options", frozenset({_enums.OperatorTypeFlag.INTERNAL}))
+        setattr(cls, "bl_options", frozenset({_OpTypeFlag.INTERNAL}))
 
         @classmethod
-        def poll(cls: type[_T], context: _bpy.types.Context) -> bool:
+        def poll(cls: type[_T], context: _Ctx) -> bool:
             return False
 
         setattr(cls, "poll", poll)

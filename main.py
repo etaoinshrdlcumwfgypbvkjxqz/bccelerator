@@ -1,7 +1,7 @@
 # -*- coding: bccelerator-transform-UTF-8 -*-
-from .core import tools as _core_tools
+from .core.tools import items as _items
 
-_modules = tuple(_core_tools.items())
+_modules = tuple(_items())
 
 
 def register():

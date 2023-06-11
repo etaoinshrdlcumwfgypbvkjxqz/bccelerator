@@ -1,26 +1,59 @@
 # -*- coding: bccelerator-transform-UTF-8 -*-
-import bpy as _bpy
-import itertools as _itertools
-import typing as _typing
+from bpy.props import (
+    BoolProperty as _BoolProp,  # type: ignore
+    EnumProperty as _EnumProp,  # type: ignore
+)
+from bpy.types import (
+    Collection as _BCollect,
+    Context as _Ctx,
+    ID as _ID,
+    Menu as _Menu,
+    Operator as _Op,
+)
+from itertools import chain as _chain
+from typing import (
+    AbstractSet as _Set,
+    Annotated as _Annotated,
+    Any as _Any,
+    Collection as _Collect,
+    ClassVar as _ClassVar,
+    Iterable as _Iter,
+)
 
-from .. import util as _util
-from ..util import enums as _util_enums
-from ..util import props as _util_props
-from ..util import types as _util_types
-from ..util import utils as _util_utils
+from ..util import flatmap as _flatmap
+from ..util.enums import (
+    IDType as _IDType,
+    ObjectModifierType as _ObjModifierType,
+    OperatorReturn as _OpReturn,
+    OperatorTypeFlag as _OpTypeFlag,
+    PropertyFlagEnum as _PropFlag,
+    SpaceType as _SpaceType,
+    WMReport as _WMReport,
+)
+from ..util.props import enum_property_item as _enum_prop_item
+from ..util.types import (
+    Drawer as _Drawer,
+    draw_func_class as _draw_func_class,
+    internal_operator as _int_op,
+)
+from ..util.utils import (
+    configure_driver as _cfg_drv,
+    has_driver as _has_drv,
+    register_classes_factory as _reg_cls_fac,
+)
 
 
-class LinkModifierByName(_bpy.types.Operator):
+class LinkModifierByName(_Op):
     """Link modifiers from active modifier to modifiers of selected object(s) by name"""
 
-    __slots__: _typing.ClassVar = ()
-    bl_idname: _typing.ClassVar = "object.link_modifier_by_name"
-    bl_label: _typing.ClassVar = "Link Modifier By Name"
-    bl_options: _typing.ClassVar = {
-        _util_enums.OperatorTypeFlag.REGISTER,
-        _util_enums.OperatorTypeFlag.UNDO,
+    __slots__: _ClassVar = ()
+    bl_idname: _ClassVar = "object.link_modifier_by_name"
+    bl_label: _ClassVar = "Link Modifier By Name"
+    bl_options: _ClassVar = {
+        _OpTypeFlag.REGISTER,
+        _OpTypeFlag.UNDO,
     }
-    exclude_attrs: _typing.ClassVar = frozenset(
+    exclude_attrs: _ClassVar = frozenset(
         {
             "__doc__",
             "__module__",
@@ -38,7 +71,7 @@ class LinkModifierByName(_bpy.types.Operator):
     @classmethod
     def poll(  # type: ignore
         cls,
-        context: _bpy.types.Context,
+        context: _Ctx,
     ) -> bool:
         active_object = context.active_object
         return (
@@ -49,15 +82,15 @@ class LinkModifierByName(_bpy.types.Operator):
 
     def execute(  # type: ignore
         self,
-        context: _bpy.types.Context,
-    ) -> _typing.AbstractSet[_util_enums.OperatorReturn]:
+        context: _Ctx,
+    ) -> _Set[_OpReturn]:
         modifiers = 0
         drivers = 0
 
         from_object = context.active_object
         from_modifier = from_object.modifiers.active
-        modifier_name: _typing.Any = from_modifier.name
-        modifier_type = _util_enums.ObjectModifierType(from_modifier.type)
+        modifier_name: _Any = from_modifier.name
+        modifier_type = _ObjModifierType(from_modifier.type)
         modifier_attrs = tuple(
             filter(lambda attr: attr not in self.exclude_attrs, dir(from_modifier))
         )
@@ -70,21 +103,21 @@ class LinkModifierByName(_bpy.types.Operator):
                 to_drivers = 0
                 for modifier_attr in modifier_attrs:
                     data_path = f'modifiers["{modifier_name}"].{modifier_attr}'
-                    if _util_utils.has_driver(to_object, data_path):
+                    if _has_drv(to_object, data_path):
                         continue
                     try:
                         curves = to_object.driver_add(data_path)
                     except TypeError:
                         continue
-                    if isinstance(curves, _typing.Collection):
+                    if isinstance(curves, _Collect):
                         multiple = True
                     else:
                         multiple = False
                         curves = (curves,)
                     for index, curve in enumerate(curves):
-                        _util_utils.configure_driver(
+                        _cfg_drv(
                             curve.driver,
-                            id_type=_util_enums.IDType.OBJECT,
+                            id_type=_IDType.OBJECT,
                             id=from_object,
                             data_path=f"{data_path}[{index}]"
                             if multiple
@@ -95,162 +128,144 @@ class LinkModifierByName(_bpy.types.Operator):
                 modifiers += 1
                 drivers += to_drivers
                 self.report(
-                    {_util_enums.WMReport.INFO},
+                    {_WMReport.INFO},
                     f'Linked modifier of "{to_object.name_full}" using {to_drivers} driver(s)',
                 )
         self.report(
-            {_util_enums.WMReport.INFO},
+            {_WMReport.INFO},
             f"Linked {modifiers} modifier(s) using {drivers} driver(s)",
         )
-        return (
-            {_util_enums.OperatorReturn.FINISHED}
-            if drivers > 0
-            else {_util_enums.OperatorReturn.CANCELLED}
-        )
+        return {_OpReturn.FINISHED} if drivers > 0 else {_OpReturn.CANCELLED}
 
 
-class ChangeLibraryOverrideEditable(_bpy.types.Operator):
+class ChangeLibraryOverrideEditable(_Op):
     """Change editability of selected library override(s)"""
 
-    __slots__: _typing.ClassVar = ()
-    bl_idname: _typing.ClassVar = "outliner.liboverride_editable_operation"
-    bl_label: _typing.ClassVar = "Change Library Override(s) Editability"
-    bl_options: _typing.ClassVar = {
-        _util_enums.OperatorTypeFlag.REGISTER,
-        _util_enums.OperatorTypeFlag.UNDO,
+    __slots__: _ClassVar = ()
+    bl_idname: _ClassVar = "outliner.liboverride_editable_operation"
+    bl_label: _ClassVar = "Change Library Override(s) Editability"
+    bl_options: _ClassVar = {
+        _OpTypeFlag.REGISTER,
+        _OpTypeFlag.UNDO,
     }
 
-    editable: _typing.Annotated[
-        bool,
-        _bpy.props.BoolProperty,  # type: ignore
-    ]
-    selection_set_items: _typing.ClassVar = {
-        "SELECTED": _util_props.enum_property_item(
+    editable: _Annotated[bool, _BoolProp]
+    selection_set_items: _ClassVar = {
+        "SELECTED": _enum_prop_item(
             "SELECTED",
             "Selected",
             "Apply the operation over selected data-block(s) only",
             number=0,
         ),
-        "CONTENT": _util_props.enum_property_item(
+        "CONTENT": _enum_prop_item(
             "CONTENT",
             "Content",
             "Apply the operation over content of the selected item(s) only (the data-block(s) in their sub-tree(s))",
             number=1,
         ),
-        "SELECTED_AND_CONTENT": _util_props.enum_property_item(
+        "SELECTED_AND_CONTENT": _enum_prop_item(
             "SELECTED_AND_CONTENT",
             "Selected & Content",
             "Apply the operation over selected data-block(s) and all their dependency(s)",
             number=2,
         ),
     }
-    selection_set: _typing.Annotated[
-        str,
-        _bpy.props.EnumProperty,  # type: ignore
-    ]
+    selection_set: _Annotated[str, _EnumProp]
 
     @classmethod
     def poll(  # type: ignore
         cls,
-        context: _bpy.types.Context,
+        context: _Ctx,
     ) -> bool:
         return (
             context.space_data
-            and context.space_data.type == _util_enums.SpaceType.OUTLINER
+            and context.space_data.type == _SpaceType.OUTLINER
             and any(id.override_library for id in context.selected_ids)
         )
 
     def execute(  # type: ignore
         self,
-        context: _bpy.types.Context,
-    ) -> _typing.AbstractSet[_util_enums.OperatorReturn]:
+        context: _Ctx,
+    ) -> _Set[_OpReturn]:
         processed = 0
 
         if self.selection_set == "SELECTED":
             data = context.selected_ids
         elif self.selection_set == "CONTENT":
 
-            def lamb(id: _bpy.types.ID) -> _typing.Iterable[_bpy.types.ID]:
+            def lamb(id: _ID) -> _Iter[_ID]:
                 return (
-                    _itertools.chain(_util.flatmap(lamb, id.children), id.objects)
-                    if isinstance(id, _bpy.types.Collection)
+                    _chain(_flatmap(lamb, id.children), id.objects)
+                    if isinstance(id, _BCollect)
                     else (id,)
                 )
 
-            data = _util.flatmap(lamb, context.selected_ids)
+            data = _flatmap(lamb, context.selected_ids)
         elif self.selection_set == "SELECTED_AND_CONTENT":
 
-            def lamb(id: _bpy.types.ID) -> _typing.Iterable[_bpy.types.ID]:
+            def lamb(id: _ID) -> _Iter[_ID]:
                 return (
-                    _itertools.chain(
+                    _chain(
                         (id,),
-                        _util.flatmap(lamb, id.children),
+                        _flatmap(lamb, id.children),
                         id.objects,
                     )
-                    if isinstance(id, _bpy.types.Collection)
+                    if isinstance(id, _BCollect)
                     else (id,)
                 )
 
-            data = _util.flatmap(lamb, context.selected_ids)
+            data = _flatmap(lamb, context.selected_ids)
         else:
             self.report(
-                {_util_enums.WMReport.ERROR_INVALID_INPUT},
+                {_WMReport.ERROR_INVALID_INPUT},
                 f'Invalid selection set "{self.selection_set}"',
             )
-            return {_util_enums.OperatorReturn.CANCELLED}
+            return {_OpReturn.CANCELLED}
 
         for datum in data:
             if datum.override_library:
                 datum.override_library.is_system_override = not self.editable
                 processed += 1
                 self.report(
-                    {_util_enums.WMReport.INFO},
+                    {_WMReport.INFO},
                     f'Changed editability of library override "{datum.name_full}"',
                 )
 
         self.report(
-            {_util_enums.WMReport.INFO},
+            {_WMReport.INFO},
             f"Changed editability of {processed} data-block(s)",
         )
-        return (
-            {_util_enums.OperatorReturn.FINISHED}
-            if processed > 0
-            else {_util_enums.OperatorReturn.CANCELLED}
-        )
+        return {_OpReturn.FINISHED} if processed > 0 else {_OpReturn.CANCELLED}
 
 
-ChangeLibraryOverrideEditable.__annotations__["editable"] = (
-    _bpy.props.BoolProperty  # type: ignore
-)(
+ChangeLibraryOverrideEditable.__annotations__["editable"] = (_BoolProp)(
     name="Editable",
     description="Editability",
     default=False,
-    options={_util_enums.PropertyFlagEnum.SKIP_SAVE},
+    options={_PropFlag.SKIP_SAVE},
 )
-ChangeLibraryOverrideEditable.__annotations__["selection_set"] = (
-    _bpy.props.EnumProperty  # type: ignore
-)(
+ChangeLibraryOverrideEditable.__annotations__["selection_set"] = (_EnumProp)(
     name="Selection Set",
     items=ChangeLibraryOverrideEditable.selection_set_items.values(),  # type: ignore
     description="Over which part of the tree item(s) to apply the operation",
     default="SELECTED",
-    options={_util_enums.PropertyFlagEnum.SKIP_SAVE},
+    options={_PropFlag.SKIP_SAVE},
 )
 
 
-class _LibraryOverrideEditableMenu(_bpy.types.Menu):
-    __slots__: _typing.ClassVar = ()
-    __editable: _typing.ClassVar[bool]
+class _LibOverrideEditableMenu(_Menu):
+    __slots__: _ClassVar = ()
+    __editable: _ClassVar[bool]
 
-    def __init_subclass__(cls, editable: bool, **kwargs: _typing.Any):
+    def __init_subclass__(cls, editable: bool, **kwargs: _Any):
         super().__init_subclass__(**kwargs)
         cls.__editable = editable
-        cls.bl_idname = f'OUTLINER_MT_liboverride_editable_{"editable" if editable else "noneditable"}'  # type: ignore
-        cls.bl_label = "Editable" if editable else "Non-Editable"  # type: ignore
+        cls.bl_idname = f'OUTLINER_MT_liboverride_editable_{"editable" if editable else "noneditable"}'
+        cls.bl_label = "Editable" if editable else "Non-Editable"
 
     def draw(
         self,
-        context: _bpy.types.Context | None,
+        context: _Ctx | None,
     ):
         for selection_set in ChangeLibraryOverrideEditable.selection_set_items.values():
             op = self.layout.operator(
@@ -260,20 +275,20 @@ class _LibraryOverrideEditableMenu(_bpy.types.Menu):
             setattr(op, "selection_set", selection_set[0])
 
 
-@_util_types.draw_func_class
-@_util_types.internal_operator(uuid="06211866-d898-46d8-b253-14e4cd41dd77")
-class DrawFunc(_bpy.types.Operator):
-    __slots__: _typing.ClassVar = ()
+@_draw_func_class
+@_int_op(uuid="06211866-d898-46d8-b253-14e4cd41dd77")
+class DrawFunc(_Op):
+    __slots__: _ClassVar = ()
 
-    editable_menu: _typing.ClassVar
-    noneditable_menu: _typing.ClassVar
+    editable_menu: _ClassVar
+    noneditable_menu: _ClassVar
     editable_menu, noneditable_menu = (
         type(
             "",
-            (_LibraryOverrideEditableMenu,),
+            (_LibOverrideEditableMenu,),
             {
                 "__annotations__": {
-                    "__slots__": _typing.ClassVar,
+                    "__slots__": _ClassVar,
                 },
                 "__slots__": (),
             },
@@ -282,11 +297,9 @@ class DrawFunc(_bpy.types.Operator):
         for editable in (True, False)
     )
 
-    __register: _typing.ClassVar
-    __unregister: _typing.ClassVar
-    __register, __unregister = _util_utils.register_classes_factory(
-        (editable_menu, noneditable_menu)
-    )
+    __register: _ClassVar
+    __unregister: _ClassVar
+    __register, __unregister = _reg_cls_fac((editable_menu, noneditable_menu))
 
     @classmethod
     def register(cls):
@@ -299,8 +312,8 @@ class DrawFunc(_bpy.types.Operator):
     @classmethod
     def VIEW3D_MT_make_links_draw_func(
         cls,
-        self: _util_types.Drawer,
-        context: _bpy.types.Context,
+        self: _Drawer,
+        context: _Ctx,
     ):
         self.layout.separator()
         self.layout.operator(LinkModifierByName.bl_idname)
@@ -308,15 +321,15 @@ class DrawFunc(_bpy.types.Operator):
     @classmethod
     def OUTLINER_MT_liboverride_draw_func(
         cls,
-        self: _util_types.Drawer,
-        context: _bpy.types.Context,
+        self: _Drawer,
+        context: _Ctx,
     ):
         self.layout.separator()
         self.layout.menu(cls.editable_menu.bl_idname)
         self.layout.menu(cls.noneditable_menu.bl_idname)
 
 
-register, unregister = _util_utils.register_classes_factory(
+register, unregister = _reg_cls_fac(
     (
         LinkModifierByName,
         ChangeLibraryOverrideEditable,

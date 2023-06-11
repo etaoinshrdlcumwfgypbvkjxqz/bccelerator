@@ -1,35 +1,33 @@
 # -*- coding: bccelerator-transform-UTF-8 -*-
-import bpy as _bpy
-import idprop as _idprop
-import typing as _typing
+from bpy.types import Library as _Lib, bpy_prop_collection as _bpy_collect
+from idprop.types import IDPropertyGroup as _IDPropGrp
+from typing import Any as _Any, TypeVar as _TypeVar, overload as _overload
 
-_T = _typing.TypeVar("_T")
-PropCollectionKey = str | tuple[str, _bpy.types.Library | None]
+_T = _TypeVar("_T")
+PropCollectionKey = str | tuple[str, _Lib | None]
 
 
-@_typing.overload
-def contains(self: _idprop.types.IDPropertyGroup, item: str) -> bool:
+@_overload
+def contains(self: _IDPropGrp, item: str) -> bool:
     ...
 
 
-@_typing.overload
-def contains(
-    self: _bpy.types.bpy_prop_collection[_typing.Any], item: PropCollectionKey
-) -> bool:
+@_overload
+def contains(self: _bpy_collect[_Any], item: PropCollectionKey) -> bool:
     ...
 
 
-def contains(self: _typing.Any, item: _typing.Any):
+def contains(self: _Any, item: _Any):
     return item in self
 
 
-@_typing.overload
+@_overload
 def getitem(  # type: ignore
-    self: _bpy.types.bpy_prop_collection[_T],
+    self: _bpy_collect[_T],
     key: PropCollectionKey,
 ) -> _T:
     ...
 
 
-def getitem(self: _typing.Any, key: _typing.Any):
+def getitem(self: _Any, key: _Any):
     return self[key]
