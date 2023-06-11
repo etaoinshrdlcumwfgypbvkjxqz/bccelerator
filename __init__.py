@@ -37,7 +37,3 @@ def unregister():
 
     main.unregister()
     _codecs.unregister(_codec.lookup)
-
-
-if __name__ == "__main__":
-    register()
