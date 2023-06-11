@@ -14,7 +14,7 @@ from typing import (
 )
 
 from ..patches import contains as _contains
-from ..util.enums import (
+from ..utils.enums import (
     IDType as _IDType,
     Material as _Mat,
     OperatorReturn as _OpReturn,
@@ -22,12 +22,12 @@ from ..util.enums import (
     SpaceType as _SpaceType,
     WMReport as _WMReport,
 )
-from ..util.types import (
+from ..utils.types import (
     Drawer as _Drawer,
     draw_func_class as _draw_func_class,
     internal_operator as _int_op,
 )
-from ..util.utils import (
+from ..utils.utils import (
     configure_driver as _cfg_drv,
     has_driver as _has_drv,
     register_classes_factory as _reg_cls_fac,

@@ -20,8 +20,8 @@ from typing import (
     Iterable as _Iter,
 )
 
-from ..util import flatmap as _flatmap
-from ..util.enums import (
+from ..utils import flatmap as _flatmap
+from ..utils.enums import (
     IDType as _IDType,
     ObjectModifierType as _ObjModifierType,
     OperatorReturn as _OpReturn,
@@ -30,13 +30,13 @@ from ..util.enums import (
     SpaceType as _SpaceType,
     WMReport as _WMReport,
 )
-from ..util.props import enum_property_item as _enum_prop_item
-from ..util.types import (
+from ..utils.props import enum_property_item as _enum_prop_item
+from ..utils.types import (
     Drawer as _Drawer,
     draw_func_class as _draw_func_class,
     internal_operator as _int_op,
 )
-from ..util.utils import (
+from ..utils.utils import (
     configure_driver as _cfg_drv,
     has_driver as _has_drv,
     register_classes_factory as _reg_cls_fac,

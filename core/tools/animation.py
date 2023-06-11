@@ -15,19 +15,19 @@ from bpy.types import (
 from random import randint as _randint
 from typing import AbstractSet as _Set, ClassVar as _ClassVar, cast as _cast
 
-from ..util import copy_attrs as _copy_attrs
-from ..util.enums import (
+from ..utils import copy_attrs as _copy_attrs
+from ..utils.enums import (
     NLAStrip as _ENLAStrip,
     OperatorReturn as _OpReturn,
     OperatorTypeFlag as _OpTypeFlag,
     WMReport as _WMReport,
 )
-from ..util.types import (
+from ..utils.types import (
     Drawer as _Drawer,
     draw_func_class as _draw_func_class,
     internal_operator as _int_op,
 )
-from ..util.utils import (
+from ..utils.utils import (
     ensure_animation_data as _ensure_anim_d,
     register_classes_factory as _reg_cls_fac,
 )

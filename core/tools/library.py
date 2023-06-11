@@ -15,20 +15,20 @@ from typing import (
 )
 
 from ..patches import contains as _contains, getitem as _getitem
-from ..util import copy_attrs as _copy_attrs
-from ..util.data import all as _all
-from ..util.enums import (
+from ..utils import copy_attrs as _copy_attrs
+from ..utils.data import all as _all
+from ..utils.enums import (
     OperatorReturn as _OpReturn,
     OperatorTypeFlag as _OpTypeFlag,
     SpaceType as _SpaceType,
     WMReport as _WMReport,
 )
-from ..util.types import (
+from ..utils.types import (
     Drawer as _Drawer,
     draw_func_class as _draw_func_class,
     internal_operator as _int_op,
 )
-from ..util.utils import (
+from ..utils.utils import (
     register_classes_factory as _reg_cls_fac,
 )
 

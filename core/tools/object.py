@@ -43,8 +43,8 @@ from typing import (
 )
 
 from ..patches import contains as _contains
-from ..util.data import all as _all
-from ..util.enums import (
+from ..utils.data import all as _all
+from ..utils.enums import (
     IDType as _IDType,
     ContextMode as _CtxMode,
     Object as _EObj,
@@ -54,13 +54,13 @@ from ..util.enums import (
     PropertySubtype as _PropStype,
     WMReport as _WMReport,
 )
-from ..util.props import enum_property_item as _enum_prop_item
-from ..util.types import (
+from ..utils.props import enum_property_item as _enum_prop_item
+from ..utils.types import (
     Drawer as _Drawer,
     draw_func_class as _draw_func_class,
     internal_operator as _int_op,
 )
-from ..util.utils import (
+from ..utils.utils import (
     ensure_animation_data as _ensure_anim_d,
     register_classes_factory as _reg_cls_fac,
 )
