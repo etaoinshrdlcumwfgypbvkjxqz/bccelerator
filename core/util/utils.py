@@ -49,13 +49,13 @@ def register_class(cls: type):
 def unregister_class(cls: type[_bpy.types.bpy_struct]):
     # wtf: https://blender.stackexchange.com/a/124838
     if issubclass(cls, _bpy.types.Operator):
-        bl_idname_parts = cls.bl_idname.split(".")
+        bl_idname_parts = cls.bl_idname.split(".", 2)
         bl_idname_parts[0] = bl_idname_parts[0].upper()
         rna_id = "_OT_".join(bl_idname_parts)
     else:
         rna_id = getattr(cls, "bl_idname")
     _bpy.utils.unregister_class(  # type: ignore
-        getattr(_bpy.types.bpy_struct, "bl_rna_get_subclass_py")(rna_id)
+        getattr(_bpy.types, rna_id),
     )
 
 
