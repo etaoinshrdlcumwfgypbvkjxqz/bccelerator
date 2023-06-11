@@ -24,12 +24,10 @@ def contains(self: _typing.Any, item: _typing.Any):
 
 
 @_typing.overload
-def getitem(self: _typing.Never, key: _typing.Never) -> _typing.Never:
-    ...
-
-
-@_typing.overload
-def getitem(self: _bpy.types.bpy_prop_collection[_T], key: PropCollectionKey) -> _T:
+def getitem(  # type: ignore
+    self: _bpy.types.bpy_prop_collection[_T],
+    key: PropCollectionKey,
+) -> _T:
     ...
 
 
