@@ -182,14 +182,18 @@ class ConfigureEEVEEVolumetrics(_Op):
         return context.window_manager.invoke_props_dialog(self)
 
 
-ConfigureEEVEEVolumetrics.__annotations__["mode"] = _EnumProp(
-    name="EEVEE Volumetrics Mode",
-    items=ConfigureEEVEEVolumetrics.mode_items.values(),  # type: ignore
-    description="Volumetrics mode for EEVEE for selected object(s)",
-    default="DISABLE",
-    options={
-        _PropFlag.SKIP_SAVE,
-    },
+ConfigureEEVEEVolumetrics.__annotations__.update(
+    {
+        "mode": _EnumProp(
+            name="EEVEE Volumetrics Mode",
+            items=ConfigureEEVEEVolumetrics.mode_items.values(),  # type: ignore
+            description="Volumetrics mode for EEVEE for selected object(s)",
+            default="DISABLE",
+            options={
+                _PropFlag.SKIP_SAVE,
+            },
+        )
+    }
 )
 
 

@@ -237,18 +237,22 @@ class ChangeLibraryOverrideEditable(_Op):
         return {_OpReturn.FINISHED} if processed > 0 else {_OpReturn.CANCELLED}
 
 
-ChangeLibraryOverrideEditable.__annotations__["editable"] = (_BoolProp)(
-    name="Editable",
-    description="Editability",
-    default=False,
-    options={_PropFlag.SKIP_SAVE},
-)
-ChangeLibraryOverrideEditable.__annotations__["selection_set"] = (_EnumProp)(
-    name="Selection Set",
-    items=ChangeLibraryOverrideEditable.selection_set_items.values(),  # type: ignore
-    description="Over which part of the tree item(s) to apply the operation",
-    default="SELECTED",
-    options={_PropFlag.SKIP_SAVE},
+ChangeLibraryOverrideEditable.__annotations__.update(
+    {
+        "editable": _BoolProp(
+            name="Editable",
+            description="Editability",
+            default=False,
+            options={_PropFlag.SKIP_SAVE},
+        ),
+        "selection_set": _EnumProp(
+            name="Selection Set",
+            items=ChangeLibraryOverrideEditable.selection_set_items.values(),  # type: ignore
+            description="Over which part of the tree item(s) to apply the operation",
+            default="SELECTED",
+            options={_PropFlag.SKIP_SAVE},
+        ),
+    }
 )
 
 
