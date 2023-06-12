@@ -6,7 +6,6 @@ from bpy.types import (
     Operator as _Op,
 )
 from typing import (
-    AbstractSet as _Set,
     Any as _Any,
     Callable as _Callable,
     Collection as _Collect,
@@ -55,10 +54,10 @@ class RemapUserToLibraryByName(_Op):
             and any(not id.library for id in context.selected_ids)
         )
 
-    def execute(  # type: ignore
+    def execute(
         self,
         context: _Ctx,
-    ) -> _Set[_OpReturn]:
+    ) -> set[str]:
         processed = 0
         local_users = {
             (type(id), id.name): id for id in context.selected_ids if not id.library
@@ -101,10 +100,10 @@ class RemapUserToLocalByName(_Op):
             and any(id.library for id in context.selected_ids)
         )
 
-    def execute(  # type: ignore
+    def execute(
         self,
         context: _Ctx,
-    ) -> _Set[_OpReturn]:
+    ) -> set[str]:
         processed = 0
         all_data = _all(context)
         for lib_user, local_user in (
@@ -144,10 +143,10 @@ class LocalizeLibrary(_Op):
             and any(isinstance(id, _Lib) for id in context.selected_ids)
         )
 
-    def execute(  # type: ignore
+    def execute(
         self,
         context: _Ctx,
-    ) -> _Set[_OpReturn]:
+    ) -> set[str]:
         users = tuple(
             user
             for lib in context.selected_ids
@@ -190,10 +189,10 @@ class CleanUpLibraryWeakReference(_Op):
         _OpTypeFlag.UNDO,
     }
 
-    def execute(  # type: ignore
+    def execute(
         self,
         context: _Ctx,
-    ) -> _Set[_OpReturn]:
+    ) -> set[str]:
         data = tuple(
             datum
             for data in _all(context).values()

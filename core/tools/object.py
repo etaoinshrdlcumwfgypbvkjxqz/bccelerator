@@ -19,7 +19,6 @@ from itertools import islice as _islice
 from math import log10 as _log10
 from mathutils import Vector as _Vec
 from typing import (
-    AbstractSet as _Set,
     Annotated as _Annotated,
     Callable as _Callable,
     Collection as _Collect,
@@ -148,10 +147,10 @@ class ConfigureEEVEEVolumetrics(_Op):
     ) -> bool:
         return bool(context.selected_objects)
 
-    def execute(  # type: ignore
+    def execute(
         self,
         context: _Ctx,
-    ) -> _Set[_OpReturn]:
+    ) -> set[str]:
         processed = 0
         for object in context.selected_objects:
             if self.mode_name in object:
@@ -216,10 +215,10 @@ class MergeWallCollection(_Op):
             and "wall" in context.collection.name
         )
 
-    def execute(  # type: ignore
+    def execute(
         self,
         context: _Ctx,
-    ) -> _Set[_OpReturn]:
+    ) -> set[str]:
         data = context.blend_data
         scene = context.scene
         collection = context.collection
@@ -277,10 +276,10 @@ class FixRigifyRigAnimationData(_Op):
             and any("rig_ui" in obj for obj in context.selected_objects)
         )
 
-    def execute(  # type: ignore
+    def execute(
         self,
         context: _Ctx,
-    ) -> _Set[_OpReturn]:
+    ) -> set[str]:
         processed = 0
         for object in (obj for obj in context.selected_objects if "rig_ui" in obj):
             animd = _ensure_anim_d(object)
@@ -329,10 +328,10 @@ class CleanUpCustomProperties(_Op):
         }
     )
 
-    def execute(  # type: ignore
+    def execute(
         self,
         context: _Ctx,
-    ) -> _Set[_OpReturn]:
+    ) -> set[str]:
         processed = 0
         p_data = 0
         for datum in (

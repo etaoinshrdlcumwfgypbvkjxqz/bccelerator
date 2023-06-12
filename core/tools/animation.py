@@ -9,7 +9,7 @@ from bpy.types import (
     Operator as _Op,
 )
 from random import randint as _randint
-from typing import AbstractSet as _Set, ClassVar as _ClassVar, cast as _cast
+from typing import ClassVar as _ClassVar, cast as _cast
 
 from ..utils import copy_attrs as _copy_attrs
 from ..utils.enums import (
@@ -110,10 +110,10 @@ class CopySelectedNLATrack(_Op):
             for obj in context.selected_objects
         )
 
-    def execute(  # type: ignore
+    def execute(
         self,
         context: _Ctx,
-    ) -> _Set[_OpReturn]:
+    ) -> set[str]:
         processed = 0
         from_track = context.active_nla_track
         for obj in context.selected_objects:
@@ -182,10 +182,10 @@ class RandomizeSelectedNLAStrip(_Op):
     ) -> bool:
         return bool(context.selected_nla_strips)
 
-    def execute(  # type: ignore
+    def execute(
         self,
         context: _Ctx,
-    ) -> _Set[_OpReturn]:
+    ) -> set[str]:
         processed = 0
         for nla_strip in context.selected_nla_strips:
             nla_tracks = (

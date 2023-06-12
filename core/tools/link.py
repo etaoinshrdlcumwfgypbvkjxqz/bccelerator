@@ -12,7 +12,6 @@ from bpy.types import (
 )
 from itertools import chain as _chain
 from typing import (
-    AbstractSet as _Set,
     Annotated as _Annotated,
     Any as _Any,
     Collection as _Collect,
@@ -80,10 +79,10 @@ class LinkModifierByName(_Op):
             and len(context.selected_objects) >= 2
         )
 
-    def execute(  # type: ignore
+    def execute(
         self,
         context: _Ctx,
-    ) -> _Set[_OpReturn]:
+    ) -> set[str]:
         modifiers = 0
         drivers = 0
 
@@ -183,10 +182,10 @@ class ChangeLibraryOverrideEditable(_Op):
             and any(id.override_library for id in context.selected_ids)
         )
 
-    def execute(  # type: ignore
+    def execute(
         self,
         context: _Ctx,
-    ) -> _Set[_OpReturn]:
+    ) -> set[str]:
         processed = 0
 
         if self.selection_set == "SELECTED":

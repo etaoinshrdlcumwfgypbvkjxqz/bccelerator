@@ -7,7 +7,6 @@ from bpy.types import (
     SpaceNodeEditor as _SpaceNodeEditor,
 )
 from typing import (
-    AbstractSet as _Set,
     Collection as _Collect,
     ClassVar as _ClassVar,
     cast as _cast,
@@ -57,10 +56,10 @@ class MakeLinksByName(_Op):
             and len(context.selected_nodes) >= 2
         )
 
-    def execute(  # type: ignore
+    def execute(
         self,
         context: _Ctx,
-    ) -> _Set[_OpReturn]:
+    ) -> set[str]:
         processed = 0
         node_tree = _cast(_SpaceNodeEditor, context.space_data).edit_tree
         from_node = context.active_node
@@ -101,10 +100,10 @@ class ConfigurePrincipledMaterialDriver(_Op):
             and context.active_node
         )
 
-    def execute(  # type: ignore
+    def execute(
         self,
         context: _Ctx,
-    ) -> _Set[_OpReturn]:
+    ) -> set[str]:
         processed = 0
         material = context.material
         node = context.active_node
