@@ -1,7 +1,14 @@
 # -*- coding: bccelerator-transform-UTF-8 -*-
 from bpy.ops import nla as _nla
+from bpy.props import (
+    EnumProperty as _EnumProp,  # type: ignore
+    FloatProperty as _FloatProp,  # type: ignore
+    IntProperty as _IntProp,  # type: ignore
+)
 from bpy.types import (
     Context as _Ctx,
+    Event as _Evt,
+    FModifierStepped as _FModStepped,
     ID as _ID,
     NlaStrip as _NlaStrip,
     NlaTrack as _NlaTrack,
@@ -9,15 +16,18 @@ from bpy.types import (
     Operator as _Op,
 )
 from random import randint as _randint
-from typing import ClassVar as _ClassVar, cast as _cast
+from typing import Annotated as _Annotated, ClassVar as _ClassVar, cast as _cast
 
 from ..utils import copy_attrs as _copy_attrs
 from ..utils.enums import (
+    FModifierType as _FModType,
     NLAStrip as _ENLAStrip,
     OperatorReturn as _OpReturn,
     OperatorTypeFlag as _OpTypeFlag,
+    PropertyFlagEnum as _PropFlag,
     WMReport as _WMReport,
 )
+from ..utils.props import enum_property_item as _enum_prop_item
 from ..utils.types import (
     Drawer as _Drawer,
     draw_func_class as _draw_func_class,
@@ -28,6 +38,7 @@ from ..utils.utils import (
     register_classes_factory as _reg_cls_fac,
 )
 
+_NLA_FMODIFIER_ADD = _nla.fmodifier_add  # type: ignore
 _NLA_SELECT_ALL = _nla.select_all  # type: ignore
 _NLA_SOUNDCLIP_ADD = _nla.soundclip_add  # type: ignore
 _NLA_TRANSITION_ADD = _nla.transition_add  # type: ignore
@@ -244,6 +255,116 @@ class RandomizeSelectedNLAStrip(_Op):
         return {_OpReturn.FINISHED} if processed > 0 else {_OpReturn.CANCELLED}
 
 
+class SynchronizeSteppedInterpolationFModifier(_Op):
+    """Synchronize stepped interpolation F-modifier(s) for selected NLA strip(s)"""
+
+    __slots__: _ClassVar = ()
+    bl_idname: _ClassVar = "nla.sychronize_stepped_interpolation_fmodifier"
+    bl_label: _ClassVar = "Synchronize Stepped Interpolation F-Modifier(s)"
+    bl_options: _ClassVar = {_OpTypeFlag.REGISTER, _OpTypeFlag.UNDO}
+    bl_property: _ClassVar = "select"
+
+    step_size: _Annotated[float, _FloatProp]
+    offset: _Annotated[float, _FloatProp]
+    select_items: _ClassVar = {
+        "USE_EXISTING": _enum_prop_item(
+            "USE_EXISTING",
+            "Use Existing",
+            "Use the existing F-modifier at the specified index",
+            number=0,
+        ),
+        "ADD_IF_NOT_EXIST": _enum_prop_item(
+            "ADD_IF_NOT_EXIST",
+            "Add If Not Exist",
+            "Add a F-modifier if not exist, otherwise use the existing one at the specified index",
+            number=1,
+        ),
+        "ALWAYS_ADD": _enum_prop_item(
+            "ALWAYS_ADD", "Always Add", "Always add a F-modifier", number=2
+        ),
+    }
+    select: _Annotated[str, _EnumProp]
+    existing_index: _Annotated[int, _IntProp]
+
+    @classmethod
+    def poll(  # type: ignore
+        cls,
+        context: _Ctx,
+    ) -> bool:
+        return bool(context.selected_nla_strips)
+
+    def execute(
+        self,
+        context: _Ctx,
+    ) -> set[str]:
+        processed = 0
+        strips = tuple(context.selected_nla_strips)
+        _NLA_SELECT_ALL(action="DESELECT")
+        for strip in strips:
+            try:
+                if self.select == "ALWAYS_ADD":
+                    raise IndexError()
+                mod = tuple(
+                    mod for mod in strip.modifiers if mod.type == _FModType.STEPPED
+                )[self.existing_index]
+            except IndexError:
+                if self.select == "USE_EXISTING":
+                    continue
+                strip.select = True
+                _NLA_FMODIFIER_ADD(type=_FModType.STEPPED, only_active=False)
+                strip.select = False
+                mod = next(
+                    mod
+                    for mod in reversed(strip.modifiers)
+                    if mod.type == _FModType.STEPPED
+                )
+            mod = _cast(_FModStepped, mod)
+            mod.frame_step = self.step_size
+            mod.frame_offset = -strip.frame_start + self.offset
+            processed += 1
+        for strip in strips:
+            strip.select = True
+        return {_OpReturn.FINISHED} if processed > 0 else {_OpReturn.CANCELLED}
+
+    def invoke(
+        self,
+        context: _Ctx,
+        event: _Evt,
+    ):
+        return context.window_manager.invoke_props_dialog(self)
+
+
+SynchronizeSteppedInterpolationFModifier.__annotations__.update(
+    {
+        "step_size": _FloatProp(
+            name="Step Size",
+            description="Number of frames to hold per step",
+            default=2,
+            options={_PropFlag.SKIP_SAVE},
+        ),
+        "offset": _FloatProp(
+            name="Offset",
+            description="Reference number of frames before frames get held",
+            default=0,
+            options={_PropFlag.SKIP_SAVE},
+        ),
+        "select": _EnumProp(
+            name="Select",
+            items=SynchronizeSteppedInterpolationFModifier.select_items.values(),  # type: ignore
+            description="Selection of F-modifier(s) to apply the operation on",
+            default="USE_EXISTING",
+            options={_PropFlag.SKIP_SAVE},
+        ),
+        "existing_index": _IntProp(
+            name="Existing Index",
+            description="Index of existing F-modifier(s)",
+            default=-1,
+            options={_PropFlag.SKIP_SAVE},
+        ),
+    }
+)
+
+
 @_draw_func_class
 @_int_op(uuid="f11f0af4-bbec-44d0-9ceb-4386f07ef2c6")
 class DrawFunc(_Op):
@@ -258,12 +379,14 @@ class DrawFunc(_Op):
         self.layout.separator()
         self.layout.operator(CopySelectedNLATrack.bl_idname)
         self.layout.operator(RandomizeSelectedNLAStrip.bl_idname)
+        self.layout.operator(SynchronizeSteppedInterpolationFModifier.bl_idname)
 
 
 register, unregister = _reg_cls_fac(
     (
         CopySelectedNLATrack,
         RandomizeSelectedNLAStrip,
+        SynchronizeSteppedInterpolationFModifier,
         DrawFunc,
     )
 )

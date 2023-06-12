@@ -66,6 +66,21 @@ class DriverVariable:
 
 @_final
 @_unique
+class FModifierType(_StrEnum):
+    __slots__: _ClassVar = ()
+
+    CYCLES: _ClassVar = "CYCLES"
+    ENVELOPE: _ClassVar = "ENVELOPE"
+    FNGENERATOR: _ClassVar = "FNGENERATOR"
+    GENERATOR: _ClassVar = "GENERATOR"
+    LIMITS: _ClassVar = "LIMITS"
+    NOISE: _ClassVar = "NOISE"
+    NULL: _ClassVar = "NULL"
+    STEPPED: _ClassVar = "STEPPED"
+
+
+@_final
+@_unique
 class IDType(_StrEnum):
     __slots__: _ClassVar = ()
 
