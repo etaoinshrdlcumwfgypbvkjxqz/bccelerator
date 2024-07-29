@@ -1,4 +1,3 @@
-# -*- coding: UTF-8 -*-
 from bpy.types import bpy_prop_collection as _bpy_collection
 from codecs import Codec as _Codec, CodecInfo as _CodecInfo, lookup as _lookup
 from io import StringIO as _StringIO
